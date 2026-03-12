@@ -167,6 +167,42 @@ In the app's Settings screen, configure the services you need:
 
 ---
 
+## Privacy & Permissions
+
+Memo requests the following system permissions. Each can be reviewed and revoked at any time in iOS Settings.
+
+| Permission | Used For |
+|------------|----------|
+| **Camera** | AR scene tracking, item recording, face recognition, room scanning |
+| **Microphone** | Voice input for the chat assistant |
+| **Speech Recognition** | On-device speech-to-text for voice commands |
+| **HomeKit** | Reading motion sensor and smart plug events for behavioral awareness |
+| **Face ID** | Caregiver authentication |
+
+### Data Processing
+
+**Processed entirely on-device:**
+- Face detection, embedding, and recognition (ArcFace CoreML model)
+- AR spatial mapping and item anchoring
+- Speech-to-text transcription
+- All SwiftData storage (memories, contacts, rooms, medication plans)
+- HomeKit sensor event collection
+
+**Sent to third-party services (only when configured):**
+- **DeepSeek API** — voice chat messages and memory search context, for generating AI responses
+- **Google Gemini API** — camera frame snapshots, for item recognition during recording
+- **EverMemOS** — memory events, for long-term storage, indexing, and retrieval
+
+No data is sent to any external service until you explicitly provide API keys or backend credentials in Settings. Without configuration, the app operates fully offline.
+
+---
+
+## Disclaimer
+
+**This app is a research prototype and is not a medical device.** It is not intended to diagnose, treat, or replace professional medical care for Alzheimer's disease or any other condition. Always consult qualified healthcare professionals for medical decisions.
+
+---
+
 ## Project Status
 
 This is an actively evolving research project. Expect breaking changes.
