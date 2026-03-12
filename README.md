@@ -23,6 +23,8 @@ Memories flow into the system from multiple sources — some require a single ta
 **Face Recognition** — A dedicated button identifies the person in front of the camera, matches them against enrolled contacts, and announces the result by voice ("This is your daughter, Annie"). Each encounter is recorded as a memory.
 
 **Smart Home Sensors** — Memo integrates with HomeKit-compatible accessories to passively observe daily behavior with no manual input:
+
+![Smart Home Awareness](assets/WatchingTV.jpg)
 - **Motion sensors** (e.g., Eve Motion) track which rooms the patient visits and when
 - **Smart plugs** (e.g., Eve Energy) detect appliance usage — a kettle, TV, or microwave — logging what the patient does and at what time
 - Works with any HomeKit-compatible accessory — no proprietary hub required
