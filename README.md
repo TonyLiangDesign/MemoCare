@@ -12,6 +12,8 @@ The app has two distinct interfaces: a simplified **Patient Mode** for daily use
 
 ## Patient Mode
 
+The patient interface is designed to be **radically simple** — no menus, no text input, no complex navigation. Just a full-screen camera with a few large buttons. The patient only needs to tap or speak. Everything else happens automatically behind the scenes.
+
 At its core, Memo is a **memory system**. Everything in the patient interface exists to help record, retrieve, and reinforce the memories that Alzheimer's gradually takes away.
 
 Powered by [EverMemOS](https://github.com/EverMind-AI/EverMemOS), Memo builds a persistent, structured long-term memory for each patient — not a chat history, but a living knowledge base of who they know, what they did, where they put things, and when they took their medication. Unlike LLM context windows that forget after each session, this memory accumulates over days and weeks, enabling the kind of precise, personalized care that Alzheimer's patients need.
@@ -53,7 +55,7 @@ Cards are auto-generated from the patient's actual data — contacts, saved item
 
 ## Caregiver Mode
 
-The caregiver interface is protected by Face ID and a 4-digit PIN. It provides full control over the patient's care environment.
+Behind the patient's simple interface is a **full-featured management system** for caregivers. Protected by Face ID and a 4-digit PIN, it gives caregivers complete control over every aspect of the patient's care — from reviewing memories and managing medication to enrolling faces and mapping rooms.
 
 ### Today's Recommendations
 
