@@ -168,7 +168,7 @@ struct LiveModeView: View {
 
             // 切换看护者
             Button { withAnimation { roleManager.toggleRole() } } label: {
-                Label("切换看护者", systemImage: "heart.fill")
+                Label("切换看护者", systemImage: "arrow.left.arrow.right")
             }
         } label: {
             ZStack(alignment: .topTrailing) {

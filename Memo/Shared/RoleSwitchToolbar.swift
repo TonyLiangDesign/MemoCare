@@ -15,9 +15,7 @@ struct RoleSwitchToolbar: ViewModifier {
                 } label: {
                     Label(
                         roleManager.isPatient ? "切换到照护者" : "切换到患者",
-                        systemImage: roleManager.isPatient
-                            ? "heart.fill"
-                            : "person.fill"
+                        systemImage: "arrow.left.arrow.right"
                     )
                 }
             }

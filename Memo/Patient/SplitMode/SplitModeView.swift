@@ -33,7 +33,7 @@ struct SplitModeView: View {
                         }
                     }
                     Button { withAnimation { roleManager.toggleRole() } } label: {
-                        Image(systemName: "heart.fill")
+                        Image(systemName: "arrow.left.arrow.right")
                             .font(.title3).foregroundStyle(.white)
                             .padding(10)
                             .background(.white.opacity(0.15), in: Circle())

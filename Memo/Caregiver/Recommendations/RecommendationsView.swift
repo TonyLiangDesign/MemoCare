@@ -45,6 +45,7 @@ struct RecommendationsView: View {
                 }
             }
             .navigationTitle("每日回忆")
+            .roleSwitchToolbar()
             .toolbar {
                 if selectedTab == .recommendations {
                     ToolbarItem(placement: .primaryAction) {

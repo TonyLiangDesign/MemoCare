@@ -15,16 +15,15 @@ struct MemoApp: App {
     @State private var patientModeManager = PatientModeManager()
     @State private var homeKitPassiveEventService = HomeKitPassiveEventService()
     @State private var dailyMemoryService = DailyMemoryService()
+    @State private var showSetup = false
 
     init() {
         let aks = APIKeyStore()
         _apiKeyStore = State(initialValue: aks)
         _geminiMedicationService = State(initialValue: GeminiMedicationService(apiKeyStore: aks))
 
-        // Force PIN to 7777 for dev convenience
-        let auth = AuthService()
-        auth.savePIN("7777")
-        _authService = State(initialValue: auth)
+        let needsSetup = !UserDefaults.standard.bool(forKey: "com.memo.setupComplete")
+        _showSetup = State(initialValue: needsSetup)
     }
 
     var sharedModelContainer: ModelContainer = {
@@ -73,6 +72,9 @@ struct MemoApp: App {
             .environment(patientModeManager)
             .environment(homeKitPassiveEventService)
             .environment(dailyMemoryService)
+            .sheet(isPresented: $showSetup) {
+                SetupSheet()
+            }
             .task {
                 let context = sharedModelContainer.mainContext
                 SchemaMigration.runIfNeeded(context: context)
