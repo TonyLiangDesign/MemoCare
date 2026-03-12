@@ -2,7 +2,9 @@
 
 # Memo — Alzheimer's Memory Assistant
 
-Memo is an iPhone app designed to support people living with Alzheimer's disease. It combines augmented reality, voice interaction, and AI to provide gentle, everyday memory assistance — while giving caregivers the tools they need to manage care effectively.
+Memo is an experimental project exploring how augmented reality, voice interaction, and AI-powered long-term memory can work together to support people living with Alzheimer's disease.
+
+It currently runs on iPhone as a development prototype. However, a handheld phone is not the ideal form factor for patients with cognitive decline — the vision for this project is that these capabilities will truly shine on **future AR glasses**, where memory assistance becomes ambient, always-on, and hands-free.
 
 The app has two distinct interfaces: a simplified **Patient Mode** for daily use, and a secure **Caregiver Mode** for care management.
 
