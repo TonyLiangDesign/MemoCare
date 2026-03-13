@@ -1,6 +1,7 @@
 import Foundation
 import HomeKit
 import SwiftData
+import UserNotifications
 import os.log
 import EverMemOSKit
 #if canImport(UIKit)
@@ -8,6 +9,52 @@ import UIKit
 #endif
 
 private let logger = Logger(subsystem: "com.MrPolpo.MemoCare", category: "HomeKitPassive")
+
+// MARK: - Eve Energy Custom Characteristic UUIDs
+
+/// Eve Energy exposes power metering via proprietary HomeKit characteristics.
+/// These are NOT standard Apple-defined types — the Apple Home app ignores them,
+/// but they are fully readable via the HomeKit framework.
+private enum EveCharacteristic {
+    static let watts       = "E863F10D-079E-48FF-8F27-9C2605A29F52"  // UInt16, raw / 10 = W
+    static let amps        = "E863F126-079E-48FF-8F27-9C2605A29F52"  // UInt16, raw / 100 = A
+    static let totalKWh    = "E863F10C-079E-48FF-8F27-9C2605A29F52"  // UInt32, raw / 1000 = kWh
+    static let voltAmps    = "E863F110-079E-48FF-8F27-9C2605A29F52"  // UInt16, raw / 10 = VA
+    static let voltage     = "E863F10A-079E-48FF-8F27-9C2605A29F52"  // UInt16, raw / 10 = V
+
+    static let allUUIDs: Set<String> = [watts, amps, totalKWh, voltAmps, voltage]
+
+    static func displayName(for uuid: String) -> String? {
+        switch uuid.uppercased() {
+        case watts:    return "功率(W)"
+        case amps:     return "电流(A)"
+        case totalKWh: return "累计(kWh)"
+        case voltAmps: return "视在功率(VA)"
+        case voltage:  return "电压(V)"
+        default:       return nil
+        }
+    }
+
+    static func convertValue(uuid: String, raw: Int) -> Double {
+        switch uuid.uppercased() {
+        case watts, voltAmps, voltage: return Double(raw) / 10.0
+        case amps:                     return Double(raw) / 100.0
+        case totalKWh:                 return Double(raw) / 1000.0
+        default:                       return Double(raw)
+        }
+    }
+
+    static func unit(for uuid: String) -> String {
+        switch uuid.uppercased() {
+        case watts:    return "W"
+        case amps:     return "A"
+        case totalKWh: return "kWh"
+        case voltAmps: return "VA"
+        case voltage:  return "V"
+        default:       return ""
+        }
+    }
+}
 
 /// Represents a HomeKit accessory discovered in the user's home for UI display.
 struct DiscoveredAccessory: Identifiable, Equatable {
@@ -116,6 +163,15 @@ final class HomeKitPassiveEventService: NSObject {
 
         logger.info("🏠 HomeKit 服务启动中...")
         logger.info("🔑 EverMemOSClient 配置: \(client != nil ? "已配置" : "未配置")")
+
+        // Request notification permission for power alerts
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                logger.info("🔔 通知权限已授予")
+            } else {
+                logger.warning("🔔 通知权限未授予: \(String(describing: error))")
+            }
+        }
 
         refreshStatusFromAuthorization()
         probeHomes(reason: "start")
@@ -297,13 +353,19 @@ final class HomeKitPassiveEventService: NSObject {
         logger.info("🔗 绑定配件: \(accessory.name) (房间: \(accessory.room?.name ?? "未分配"))")
 
         let isMotionAccessory = accessory.name.contains("Motion")
-        let isEveAccessory = accessory.name.contains("Eve")
-        let isOutletAccessory = accessory.name.contains("Hot Water") || accessory.category.categoryType == HMAccessoryCategoryTypeOutlet
+        let isOutletAccessory = accessory.category.categoryType == HMAccessoryCategoryTypeOutlet
+            || accessory.name.contains("Hot Water")
+
+        // Dump ALL characteristics for outlet devices (Eve Energy, etc.) for debugging
+        if isOutletAccessory {
+            dumpAllCharacteristics(accessory)
+            probeOutletInUse(accessory)
+        }
 
         for service in accessory.services {
             for characteristic in service.characteristics {
-                // 对于 Eve 设备和插座设备，显示所有特征值以便调试
-                if isEveAccessory || isOutletAccessory {
+                // 对于插座设备，显示所有特征值以便调试
+                if isOutletAccessory {
                     logger.info("🔍 设备特征: \(accessory.name) - \(service.name)")
                     logger.info("   UUID: \(characteristic.characteristicType)")
                     logger.info("   值: \(String(describing: characteristic.value))")
@@ -312,9 +374,9 @@ final class HomeKitPassiveEventService: NSObject {
                     logger.info("   支持通知: \(characteristic.properties.contains(HMCharacteristicPropertySupportsEventNotification))")
                 }
 
-                // 对于 Motion 配件，监听所有特征值
+                // 对于 Motion 和 Outlet 配件，监听所有特征值（包括未知的 Matter 特征）
                 // 对于其他配件，只监听标准特征值
-                let shouldMonitor = isMotionAccessory || Self.isSupportedCharacteristic(characteristic)
+                let shouldMonitor = isMotionAccessory || isOutletAccessory || Self.isSupportedCharacteristic(characteristic)
                 guard shouldMonitor else { continue }
 
                 let key = characteristicCacheKey(accessory: accessory, service: service, characteristic: characteristic)
@@ -328,8 +390,13 @@ final class HomeKitPassiveEventService: NSObject {
                 if characteristic.properties.contains(HMCharacteristicPropertyReadable) {
                     characteristic.readValue { error in
                         if let error {
-                            logger.warning("HomeKit readValue failed: \(error.localizedDescription, privacy: .public)")
+                            logger.warning("HomeKit readValue failed: \(error.localizedDescription, privacy: .public) [\(characteristic.characteristicType, privacy: .public)]")
                             return
+                        }
+                        // Log raw data for outlet binary characteristics
+                        if isOutletAccessory, let data = characteristic.value as? Data {
+                            let hex = data.map { String(format: "%02X", $0) }.joined(separator: " ")
+                            logger.info("📦 \(accessory.name, privacy: .public) | \(characteristic.characteristicType, privacy: .public) 读取到 Data(\(data.count)bytes): \(hex, privacy: .public)")
                         }
                         Task { @MainActor in
                             self.primeCacheIfNeeded(key: key, value: characteristic.value)
@@ -353,6 +420,7 @@ final class HomeKitPassiveEventService: NSObject {
             || characteristic.characteristicType == HMCharacteristicTypeMotionDetected
             || characteristic.characteristicType == HMCharacteristicTypePowerState
             || characteristic.characteristicType == HMCharacteristicTypeOutletInUse
+            || EveCharacteristic.allUUIDs.contains(characteristic.characteristicType.uppercased())
     }
 
     private func characteristicCacheKey(
@@ -413,6 +481,18 @@ final class HomeKitPassiveEventService: NSObject {
         if characteristic.characteristicType == HMCharacteristicTypeOutletInUse
             || characteristic.characteristicType == HMCharacteristicTypePowerState {
             uploadOutletEvent(accessory: accessory, characteristic: characteristic)
+
+            // Send local notification when device starts drawing power
+            if let on = boolValue(characteristic.value), on {
+                sendPowerOnNotification(accessory: accessory)
+            }
+        }
+
+        // Eve Energy custom power characteristics — log detailed readings
+        let upperUUID = characteristic.characteristicType.uppercased()
+        if EveCharacteristic.allUUIDs.contains(upperUUID) {
+            handleEveEnergyReading(accessory: accessory, characteristic: characteristic)
+            return  // Eve power readings don't generate memory events
         }
 
         guard let signalText = buildSignalText(accessory: accessory, characteristic: characteristic) else {
@@ -487,6 +567,205 @@ final class HomeKitPassiveEventService: NSObject {
             lastEventSummary = content
         } catch {
             logger.error("HomeKit passive event save failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    // MARK: - Probe Hidden Characteristics
+
+    /// Force-probe OutletInUse (0x26) even if not listed in service enumeration.
+    /// Also probe all known Eve custom UUIDs and other power-related characteristics.
+    private func probeOutletInUse(_ accessory: HMAccessory) {
+        logger.info("🔎 [Probe] 开始强制探测 \(accessory.name, privacy: .public) 的隐藏特征...")
+
+        // Collect all characteristics from all services for direct reading
+        let outletInUseUUID = "00000026-0000-1000-8000-0026BB765291"
+
+        // Check all services for OutletInUse that might have been missed
+        for service in accessory.services {
+            for characteristic in service.characteristics {
+                let uuid = characteristic.characteristicType.uppercased()
+
+                if uuid == outletInUseUUID {
+                    logger.info("🔎 [Probe] ✅ 找到 OutletInUse! 服务: \(service.name, privacy: .public)")
+                    logger.info("🔎 [Probe]    值: \(String(describing: characteristic.value), privacy: .public)")
+                    logger.info("🔎 [Probe]    可读: \(characteristic.properties.contains(HMCharacteristicPropertyReadable))")
+                    logger.info("🔎 [Probe]    通知: \(characteristic.properties.contains(HMCharacteristicPropertySupportsEventNotification))")
+
+                    if characteristic.properties.contains(HMCharacteristicPropertyReadable) {
+                        characteristic.readValue { error in
+                            if let error {
+                                logger.warning("🔎 [Probe] OutletInUse 读取失败: \(error.localizedDescription)")
+                            } else {
+                                logger.info("🔎 [Probe] OutletInUse 读取成功: \(String(describing: characteristic.value), privacy: .public)")
+                            }
+                        }
+                    }
+
+                    if characteristic.properties.contains(HMCharacteristicPropertySupportsEventNotification) {
+                        characteristic.enableNotification(true) { error in
+                            if let error {
+                                logger.warning("🔎 [Probe] OutletInUse 通知订阅失败: \(error.localizedDescription)")
+                            } else {
+                                logger.info("🔎 [Probe] OutletInUse 通知订阅成功")
+                            }
+                        }
+                    }
+                    return
+                }
+            }
+        }
+
+        logger.info("🔎 [Probe] ❌ 未在任何服务中找到 OutletInUse (0x26)")
+
+        // Also try reading the Outlet service (0x47) PowerState with fresh read
+        // to see current real-time value
+        for service in accessory.services where service.serviceType == "00000047-0000-1000-8000-0026BB765291" {
+            logger.info("🔎 [Probe] 找到 Outlet 服务，列出所有特征:")
+            for characteristic in service.characteristics {
+                let uuid = characteristic.characteristicType.uppercased()
+                let stdName = Self.standardCharacteristicName(uuid) ?? "未知"
+                logger.info("🔎 [Probe]   \(uuid, privacy: .public) (\(stdName, privacy: .public)) = \(String(describing: characteristic.value), privacy: .public)")
+
+                // Force re-read every characteristic in outlet service
+                if characteristic.properties.contains(HMCharacteristicPropertyReadable) {
+                    characteristic.readValue { error in
+                        if let error {
+                            logger.info("🔎 [Probe]   重新读取 \(uuid, privacy: .public) 失败: \(error.localizedDescription)")
+                        } else {
+                            logger.info("🔎 [Probe]   重新读取 \(uuid, privacy: .public) = \(String(describing: characteristic.value), privacy: .public)")
+                        }
+                    }
+                }
+            }
+        }
+
+        // List ALL characteristic UUIDs across all services for completeness
+        logger.info("🔎 [Probe] 设备所有特征 UUID 完整列表:")
+        for service in accessory.services {
+            for characteristic in service.characteristics {
+                logger.info("🔎 [Probe]   \(service.serviceType, privacy: .public) → \(characteristic.characteristicType, privacy: .public)")
+            }
+        }
+    }
+
+    // MARK: - Eve Energy Power Monitoring
+
+    /// Handle Eve Energy custom power readings
+    private func handleEveEnergyReading(accessory: HMAccessory, characteristic: HMCharacteristic) {
+        let uuid = characteristic.characteristicType.uppercased()
+        let name = EveCharacteristic.displayName(for: uuid) ?? "未知"
+        let unit = EveCharacteristic.unit(for: uuid)
+        let roomName = accessory.room?.name ?? "未分配"
+
+        if let raw = (characteristic.value as? NSNumber)?.intValue {
+            let converted = EveCharacteristic.convertValue(uuid: uuid, raw: raw)
+            logger.info("⚡️ [Eve] \(accessory.name, privacy: .public) [\(roomName, privacy: .public)] \(name, privacy: .public): \(converted) \(unit, privacy: .public) (raw=\(raw))")
+
+            // Watts > 1W means device is actively consuming power
+            if uuid == EveCharacteristic.watts && converted > 1.0 {
+                logger.info("⚡️ [Eve] \(accessory.name, privacy: .public) 正在耗电: \(converted)W")
+            }
+        } else {
+            logger.info("⚡️ [Eve] \(accessory.name, privacy: .public) [\(roomName, privacy: .public)] \(name, privacy: .public): \(String(describing: characteristic.value), privacy: .public)")
+        }
+    }
+
+    /// Dump ALL characteristics of an accessory for debugging
+    private func dumpAllCharacteristics(_ accessory: HMAccessory) {
+        logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        logger.info("🔌 [Outlet Debug] 设备: \(accessory.name, privacy: .public)")
+        logger.info("   房间: \(accessory.room?.name ?? "未分配", privacy: .public)")
+        logger.info("   可达: \(accessory.isReachable)")
+        logger.info("   类别: \(accessory.category.categoryType, privacy: .public)")
+        logger.info("   服务数量: \(accessory.services.count)")
+
+        var eveCharCount = 0
+        var hasOutletInUse = false
+        var hasPowerState = false
+
+        for (i, service) in accessory.services.enumerated() {
+            logger.info("   📦 [\(i)] 服务: \(service.name, privacy: .public) | type: \(service.serviceType, privacy: .public)")
+
+            for (j, characteristic) in service.characteristics.enumerated() {
+                let uuid = characteristic.characteristicType.uppercased()
+                let eveName = EveCharacteristic.displayName(for: uuid)
+                let stdName = Self.standardCharacteristicName(uuid)
+                let readable = characteristic.properties.contains(HMCharacteristicPropertyReadable)
+                let writable = characteristic.properties.contains(HMCharacteristicPropertyWritable)
+                let notifiable = characteristic.properties.contains(HMCharacteristicPropertySupportsEventNotification)
+
+                var label = ""
+                if let eveName {
+                    label = " ★ Eve \(eveName)"
+                    eveCharCount += 1
+                } else if let stdName {
+                    label = " (\(stdName))"
+                }
+
+                if uuid == "00000026-0000-1000-8000-0026BB765291" { hasOutletInUse = true }
+                if uuid == "00000025-0000-1000-8000-0026BB765291" { hasPowerState = true }
+
+                logger.info("      [\(j)] \(characteristic.characteristicType, privacy: .public)\(label, privacy: .public)")
+                logger.info("          值: \(String(describing: characteristic.value), privacy: .public) | R:\(readable) W:\(writable) N:\(notifiable)")
+
+                if let eveName, let raw = (characteristic.value as? NSNumber)?.intValue {
+                    let converted = EveCharacteristic.convertValue(uuid: uuid, raw: raw)
+                    let unit = EveCharacteristic.unit(for: uuid)
+                    logger.info("          → \(converted) \(unit, privacy: .public)")
+                }
+            }
+        }
+
+        logger.info("   📊 总结: Eve私有特征=\(eveCharCount) OutletInUse=\(hasOutletInUse) PowerState=\(hasPowerState)")
+        if eveCharCount == 0 {
+            logger.info("   ⚠️ 无Eve私有功率特征 — 可能已升级Matter或固件不支持")
+        }
+        if !hasOutletInUse {
+            logger.info("   ⚠️ 无OutletInUse特征 — 将依赖PowerState检测通电")
+        }
+        logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    }
+
+    /// Map common HomeKit characteristic UUIDs to human-readable names
+    private static func standardCharacteristicName(_ uuid: String) -> String? {
+        // Standard HomeKit characteristic type UUIDs (short form)
+        switch uuid {
+        case "00000025-0000-1000-8000-0026BB765291": return "PowerState 电源开关"
+        case "00000026-0000-1000-8000-0026BB765291": return "OutletInUse 正在用电"
+        case "00000023-0000-1000-8000-0026BB765291": return "Name 名称"
+        case "00000030-0000-1000-8000-0026BB765291": return "SerialNumber 序列号"
+        case "00000020-0000-1000-8000-0026BB765291": return "Manufacturer 厂商"
+        case "00000021-0000-1000-8000-0026BB765291": return "Model 型号"
+        case "00000052-0000-1000-8000-0026BB765291": return "FirmwareRevision 固件版本"
+        case "00000037-0000-1000-8000-0026BB765291": return "Version"
+        case "00000220-0000-1000-8000-0026BB765291": return "ProductData"
+        case "000000A6-0000-1000-8000-0026BB765291": return "AccessoryFlags"
+        case "00000079-0000-1000-8000-0026BB765291": return "StatusActive"
+        default: return nil
+        }
+    }
+
+    /// Send a local notification when an outlet/device starts drawing power
+    private func sendPowerOnNotification(accessory: HMAccessory) {
+        let roomName = accessory.room?.name ?? "未分配"
+        let content = UNMutableNotificationContent()
+        content.title = "设备通电"
+        content.body = "\(accessory.name)（\(roomName)）开始用电"
+        content.sound = .default
+        content.categoryIdentifier = "HOMEKIT_POWER"
+
+        let request = UNNotificationRequest(
+            identifier: "power_on_\(accessory.uniqueIdentifier.uuidString)_\(Date().timeIntervalSince1970)",
+            content: content,
+            trigger: nil  // deliver immediately
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error {
+                logger.error("❌ 本地通知发送失败: \(error.localizedDescription)")
+            } else {
+                logger.info("🔔 通电通知已发送: \(accessory.name, privacy: .public) [\(roomName, privacy: .public)]")
+            }
         }
     }
 
@@ -676,7 +955,34 @@ extension HomeKitPassiveEventService: @preconcurrency HMAccessoryDelegate {
     }
 
     func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
-        logger.info("📡 特征值更新: \(accessory.name) - \(characteristic.characteristicType) = \(String(describing: characteristic.value))")
+        let uuid = characteristic.characteristicType.uppercased()
+        let eveName = EveCharacteristic.displayName(for: uuid)
+        let stdName = Self.standardCharacteristicName(uuid)
+
+        if let eveName {
+            if let raw = (characteristic.value as? NSNumber)?.intValue {
+                let converted = EveCharacteristic.convertValue(uuid: uuid, raw: raw)
+                let unit = EveCharacteristic.unit(for: uuid)
+                logger.info("📡 [Eve] \(accessory.name, privacy: .public) \(eveName, privacy: .public) 更新: \(converted) \(unit, privacy: .public)")
+            } else {
+                logger.info("📡 [Eve] \(accessory.name, privacy: .public) \(eveName, privacy: .public) 更新: \(String(describing: characteristic.value), privacy: .public)")
+            }
+        } else if let stdName {
+            logger.info("📡 \(accessory.name, privacy: .public) | \(stdName, privacy: .public) = \(String(describing: characteristic.value), privacy: .public)")
+        } else {
+            // Unknown characteristic — dump raw data in detail (might be Matter energy data)
+            let valueDesc: String
+            if let data = characteristic.value as? Data {
+                let hex = data.map { String(format: "%02X", $0) }.joined(separator: " ")
+                valueDesc = "Data(\(data.count)bytes): \(hex)"
+            } else if let num = characteristic.value as? NSNumber {
+                valueDesc = "NSNumber: \(num) (int=\(num.intValue) float=\(num.floatValue))"
+            } else {
+                valueDesc = "\(String(describing: characteristic.value)) [type: \(type(of: characteristic.value))]"
+            }
+            logger.info("📡🔬 \(accessory.name, privacy: .public) | 未知特征 \(characteristic.characteristicType, privacy: .public) = \(valueDesc, privacy: .public)")
+        }
+
         ingestIfChanged(accessory: accessory, service: service, characteristic: characteristic)
     }
 }

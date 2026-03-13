@@ -17,7 +17,7 @@ The app has two distinct interfaces: a simplified **Patient Mode** for daily use
 The app is available for beta testing via TestFlight.
 
 <p align="center">
-  <a href="https://testflight.apple.com/join/XXXXXX">
+  <a href="https://testflight.apple.com/join/pjsZeSgw">
     <img src="https://img.shields.io/badge/TestFlight-Join%20Beta-blue?style=for-the-badge&logo=apple&logoColor=white" alt="Download on TestFlight">
   </a>
 </p>
