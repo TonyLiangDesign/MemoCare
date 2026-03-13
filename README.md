@@ -29,8 +29,8 @@ The app is available for beta testing via TestFlight.
 
 MemoCare uses text-to-speech extensively to communicate with the patient. The default system voices sound robotic — for a much more natural experience, download an **Enhanced** or **Premium** voice:
 
-1. Open **Settings → Accessibility → Spoken Content → Voices**
-2. Select **Chinese (Simplified)** (or your preferred language)
+1. Open **Settings → Accessibility → Read & Speak → Voices**
+2. Select the language you use to talk to the assistant (e.g., Chinese (Simplified), English, etc.)
 3. Tap any voice marked **Enhanced** — download it (about 100–400 MB)
 4. Once installed, MemoCare will automatically use the higher-quality voice
 
