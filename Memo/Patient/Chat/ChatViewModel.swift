@@ -220,8 +220,10 @@ final class ChatViewModel {
         df.dateFormat = isEnglish ? "MMM d, yyyy HH:mm" : "yyyy年M月d日 HH:mm"
         let currentTime = df.string(from: Date())
 
+        var prompt = ""
+
         if isEnglish {
-            return """
+            prompt = """
             You are a warm, patient memory assistant helping Alzheimer's patients recall daily life.
 
             ## Tools
@@ -245,7 +247,7 @@ final class ChatViewModel {
             \(currentTime)
             """
         } else {
-            return """
+            prompt = """
             你是一位温暖、耐心的记忆助手，帮助阿尔茨海默症患者回忆日常生活。
 
             ## 工具
@@ -271,12 +273,21 @@ final class ChatViewModel {
         }
 
         if let context = perceptionState?.contextSummary {
-            prompt += """
+            if isEnglish {
+                prompt += """
 
-            ## 当前视线中的人物
-            \(context)
-            如果患者问"这是谁"，优先调用 who_is_visible 工具获取实时信息。
-            """
+                ## People Currently Visible
+                \(context)
+                If patient asks "who is this", prioritize calling who_is_visible tool for real-time info.
+                """
+            } else {
+                prompt += """
+
+                ## 当前视线中的人物
+                \(context)
+                如果患者问"这是谁"，优先调用 who_is_visible 工具获取实时信息。
+                """
+            }
         }
 
         return prompt
