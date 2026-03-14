@@ -746,10 +746,14 @@ final class ChatViewModel {
     }
 
     private func memorizeUserContent(_ text: String, flush: Bool = false) {
-        guard let client = apiClient else { return }
+        guard let client = apiClient else {
+            logger.warning("[Memorize] No API client configured")
+            return
+        }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
+        logger.info("[Memorize] Sending: \(trimmed.prefix(50))... flush=\(flush)")
         Task.detached { [userID, groupID] in
             let req = MemorizeRequest(
                 messageId: UUID().uuidString,
@@ -762,7 +766,12 @@ final class ChatViewModel {
                 role: userID == "patient" ? "user" : "assistant",
                 flush: flush
             )
-            _ = try? await client.memorize(req)
+            do {
+                let result = try await client.memorize(req)
+                logger.info("[Memorize] Success: \(result.message ?? "ok")")
+            } catch {
+                logger.error("[Memorize] Failed: \(error.localizedDescription)")
+            }
         }
     }
 

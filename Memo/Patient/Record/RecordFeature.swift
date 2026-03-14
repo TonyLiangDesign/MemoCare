@@ -2,6 +2,9 @@ import SwiftUI
 import RealityKit
 import ARKit
 import EverMemOSKit
+import os.log
+
+private let logger = Logger(subsystem: "com.MrPolpo.MemoCare", category: "RecordFeature")
 
 /// Extracted record (记一记) business logic kernel.
 /// Manages the capture → recognize → save → sync pipeline independently of any particular UI shell.
@@ -74,9 +77,13 @@ final class RecordFeature {
     // MARK: - EverMemOS Sync
 
     private func memorizeToEverMemOS(_ result: GeminiItemResult, roomName: String?, client: EverMemOSClient?) {
-        guard let client else { return }
+        guard let client else {
+            logger.warning("[Memorize] No API client configured")
+            return
+        }
         let locationPart = roomName.map { "，放置在\($0)" } ?? ""
         let content = "患者记录了一个物品：\(result.emoji) \(result.item)\(locationPart)。场景描述：\(result.description)"
+        logger.info("[Memorize] Recording item: \(result.emoji) \(result.item), room: \(roomName ?? "nil")")
         Task.detached {
             let req = MemorizeRequest(
                 messageId: UUID().uuidString,
@@ -89,7 +96,12 @@ final class RecordFeature {
                 role: "user",
                 flush: true
             )
-            _ = try? await client.memorize(req)
+            do {
+                let result = try await client.memorize(req)
+                logger.info("[Memorize] Success: \(result.message ?? "ok")")
+            } catch {
+                logger.error("[Memorize] Failed: \(error.localizedDescription)")
+            }
         }
     }
 }
