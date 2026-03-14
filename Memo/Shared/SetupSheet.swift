@@ -82,9 +82,10 @@ struct SetupSheet: View {
                     .autocorrectionDisabled()
 
                 if selectedDeployment == .cloud {
-                    SecureField("EverMemOS API Token", text: $everMemOSToken)
+                    TextField("EverMemOS API Token", text: $everMemOSToken)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .textContentType(.none)
                 }
 
                 Button {
@@ -109,15 +110,17 @@ struct SetupSheet: View {
             }
 
             Section(header: Text(String(localized: "DeepSeek AI 对话")), footer: Text(String(localized: "必填。用于「问一问」AI 对话功能。"))) {
-                SecureField("DeepSeek API Key", text: $deepSeekKey)
+                TextField("DeepSeek API Key", text: $deepSeekKey)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .textContentType(.none)
             }
 
             Section(header: Text(String(localized: "Gemini AI 用药监控")), footer: Text(String(localized: "选填。已内置默认密钥，如需使用自己的密钥可在此覆盖。"))) {
-                SecureField("Gemini API Key", text: $geminiKey)
+                TextField("Gemini API Key", text: $geminiKey)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .textContentType(.none)
             }
 
             Section {
