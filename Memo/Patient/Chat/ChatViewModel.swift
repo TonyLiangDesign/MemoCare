@@ -150,80 +150,125 @@ final class ChatViewModel {
 
     // MARK: - Tool Definitions
 
-    private static let memoryTools: [[String: Any]] = [
-        [
-            "type": "function",
-            "function": [
-                "name": "search_memory",
-                "description": """
-                    搜索患者的记忆记录。当用户询问以下内容时调用：
-                    - 物品放在哪里（钥匙、眼镜、手机等）
-                    - 药物相关（吃了什么药、什么时候吃）
-                    - 人物信息（某人是谁、电话号码）
-                    - 过去发生的事（昨天做了什么、上次去医院）
-                    - 日程安排（今天有什么事、什么时候复查）
-                    不要在以下情况调用：问候、闲聊、常识问题、情绪表达、感谢。
-                    """,
-                "parameters": [
-                    "type": "object",
-                    "properties": [
-                        "query": [
-                            "type": "string",
-                            "description": "提炼后的搜索关键词，如钥匙放在哪、降压药服用记录"
+    private static var memoryTools: [[String: Any]] {
+        let isEnglish = Locale.current.language.languageCode?.identifier == "en"
+
+        let searchMemoryDesc = isEnglish ? """
+            Search patient's memory records. Call when user asks about:
+            - Item locations (keys, glasses, phone, etc.)
+            - Medication (what medicine taken, when)
+            - People info (who someone is, phone numbers)
+            - Past events (what happened yesterday, last hospital visit)
+            - Schedule (what's today, when is checkup)
+            Don't call for: greetings, small talk, common knowledge, emotions, thanks.
+            """ : """
+            搜索患者的记忆记录。当用户询问以下内容时调用：
+            - 物品放在哪里（钥匙、眼镜、手机等）
+            - 药物相关（吃了什么药、什么时候吃）
+            - 人物信息（某人是谁、电话号码）
+            - 过去发生的事（昨天做了什么、上次去医院）
+            - 日程安排（今天有什么事、什么时候复查）
+            不要在以下情况调用：问候、闲聊、常识问题、情绪表达、感谢。
+            """
+
+        let queryDesc = isEnglish ? "Refined search keywords, e.g. where are keys, blood pressure medication record" : "提炼后的搜索关键词，如钥匙放在哪、降压药服用记录"
+        let topKDesc = isEnglish ? "Number of results, default 5" : "返回结果数量，默认5"
+        let whoIsDesc = isEnglish ? "Check who is currently visible to the patient. Call when patient asks 'who is this', 'who is in front of me', 'who is he/she'." : "查看当前患者视线中的人物。当患者问'这是谁'、'面前是谁'、'他/她是谁'时调用。"
+
+        return [
+            [
+                "type": "function",
+                "function": [
+                    "name": "search_memory",
+                    "description": searchMemoryDesc,
+                    "parameters": [
+                        "type": "object",
+                        "properties": [
+                            "query": [
+                                "type": "string",
+                                "description": queryDesc
+                            ],
+                            "top_k": [
+                                "type": "integer",
+                                "description": topKDesc
+                            ]
                         ],
-                        "top_k": [
-                            "type": "integer",
-                            "description": "返回结果数量，默认5"
-                        ]
-                    ],
-                    "required": ["query"]
+                        "required": ["query"]
+                    ] as [String: Any]
                 ] as [String: Any]
-            ] as [String: Any]
-        ],
-        [
-            "type": "function",
-            "function": [
-                "name": "who_is_visible",
-                "description": "查看当前患者视线中的人物。当患者问'这是谁'、'面前是谁'、'他/她是谁'时调用。",
-                "parameters": [
-                    "type": "object",
-                    "properties": [:] as [String: Any]
+            ],
+            [
+                "type": "function",
+                "function": [
+                    "name": "who_is_visible",
+                    "description": whoIsDesc,
+                    "parameters": [
+                        "type": "object",
+                        "properties": [:] as [String: Any]
+                    ] as [String: Any]
                 ] as [String: Any]
-            ] as [String: Any]
+            ]
         ]
-    ]
+    }
 
     // MARK: - Agentic System Prompt
 
     private func buildAgenticSystemPrompt() -> String {
+        let isEnglish = Locale.current.language.languageCode?.identifier == "en"
         let df = DateFormatter()
-        df.locale = Locale(identifier: "zh_CN")
-        df.dateFormat = "yyyy年M月d日 HH:mm"
+        df.locale = isEnglish ? Locale(identifier: "en_US") : Locale(identifier: "zh_CN")
+        df.dateFormat = isEnglish ? "MMM d, yyyy HH:mm" : "yyyy年M月d日 HH:mm"
         let currentTime = df.string(from: Date())
 
-        var prompt = """
-        你是一位温暖、耐心的记忆助手，帮助阿尔茨海默症患者回忆日常生活。
+        if isEnglish {
+            return """
+            You are a warm, patient memory assistant helping Alzheimer's patients recall daily life.
 
-        ## 工具
-        你有一个 `search_memory` 工具可以搜索患者的记忆记录。
-        - 当用户问到物品位置、药物、人物、过去的事、日程时，调用它。
-        - 当用户只是打招呼、闲聊、问常识、表达情绪时，直接回答，不要调用。
+            ## Tools
+            You have a `search_memory` tool to search patient's memory records.
+            - Call it when user asks about item locations, medications, people, past events, schedules.
+            - Don't call for greetings, small talk, common knowledge, or emotions.
 
-        你还有一个 `who_is_visible` 工具可以查看患者视线中的人物。
-        - 当用户问"这是谁"、"面前是谁"、"他/她是谁"时，调用它。
+            You also have a `who_is_visible` tool to check who is in patient's view.
+            - Call it when user asks "who is this", "who is in front of me", "who is he/she".
 
-        ## 回答规则
-        1. 每次 2-3 句话，简短清晰
-        2. 能回答时带上记录时间（如"今天上午10点记录的"）
-        3. 耐心对待重复提问
-        4. 发现未服药物时温和提醒
-        5. 不提供医疗建议
-        6. 没有相关记忆时明确说"我这里没有这个记录"
-        7. 工具返回错误时，告诉用户"记忆系统暂时不可用"
+            ## Response Rules
+            1. Keep responses to 2-3 sentences, short and clear
+            2. Include record time when answering (e.g. "recorded at 10am today")
+            3. Be patient with repeated questions
+            4. Gently remind about missed medications
+            5. Don't provide medical advice
+            6. Say "I don't have that record" when no relevant memory
+            7. Say "memory system temporarily unavailable" on tool errors
 
-        ## 当前时间
-        \(currentTime)
-        """
+            ## Current Time
+            \(currentTime)
+            """
+        } else {
+            return """
+            你是一位温暖、耐心的记忆助手，帮助阿尔茨海默症患者回忆日常生活。
+
+            ## 工具
+            你有一个 `search_memory` 工具可以搜索患者的记忆记录。
+            - 当用户问到物品位置、药物、人物、过去的事、日程时，调用它。
+            - 当用户只是打招呼、闲聊、问常识、表达情绪时，直接回答，不要调用。
+
+            你还有一个 `who_is_visible` 工具可以查看患者视线中的人物。
+            - 当用户问"这是谁"、"面前是谁"、"他/她是谁"时，调用它。
+
+            ## 回答规则
+            1. 每次 2-3 句话，简短清晰
+            2. 能回答时带上记录时间（如"今天上午10点记录的"）
+            3. 耐心对待重复提问
+            4. 发现未服药物时温和提醒
+            5. 不提供医疗建议
+            6. 没有相关记忆时明确说"我这里没有这个记录"
+            7. 工具返回错误时，告诉用户"记忆系统暂时不可用"
+
+            ## 当前时间
+            \(currentTime)
+            """
+        }
 
         if let context = perceptionState?.contextSummary {
             prompt += """

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/taoliang/Dropbox/works/Memo/Memo/**)",
+      "Bash(bash scripts/deploy.sh \"16 Pro\")",
+      "Bash(find:*)",
+      "Bash(/tmp/i18n_summary.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(cd:*)"
+    ]
+  }
+}

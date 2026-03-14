@@ -26,11 +26,11 @@ private enum EveCharacteristic {
 
     static func displayName(for uuid: String) -> String? {
         switch uuid.uppercased() {
-        case watts:    return "功率(W)"
-        case amps:     return "电流(A)"
-        case totalKWh: return "累计(kWh)"
-        case voltAmps: return "视在功率(VA)"
-        case voltage:  return "电压(V)"
+        case watts:    return String(localized: "功率(W)")
+        case amps:     return String(localized: "电流(A)")
+        case totalKWh: return String(localized: "累计(kWh)")
+        case voltAmps: return String(localized: "视在功率(VA)")
+        case voltage:  return String(localized: "电压(V)")
         default:       return nil
         }
     }
@@ -105,7 +105,7 @@ final class HomeKitPassiveEventService: NSObject {
     private var accessoryHomeMap: [UUID: HMHome] = [:]
 
     private let groupID = "memo_homekit_passive_group"
-    private let groupName = "Memo 家居被动事件"
+    private let groupName = String(localized: "Memo 家居被动事件")
     private let duplicateWindow: TimeInterval = 2
     private static let monitoredIDsKey = "homekit_monitored_accessory_ids"
 
@@ -296,7 +296,7 @@ final class HomeKitPassiveEventService: NSObject {
                 discovered.append(DiscoveredAccessory(
                     id: accessory.uniqueIdentifier,
                     name: accessory.name,
-                    roomName: accessory.room?.name ?? "未分配",
+                    roomName: accessory.room?.name ?? String(localized: "未分配"),
                     homeName: home.name,
                     categoryType: accessory.category.categoryType,
                     isReachable: accessory.isReachable,
@@ -502,23 +502,23 @@ final class HomeKitPassiveEventService: NSObject {
     }
 
     private func buildSignalText(accessory: HMAccessory, characteristic: HMCharacteristic) -> String? {
-        let location = accessory.room?.name ?? accessoryHomeMap[accessory.uniqueIdentifier]?.name ?? "未分配房间"
-        let prefix = "HomeKit 被动事件：\(accessory.name)（\(location)）"
+        let location = accessory.room?.name ?? accessoryHomeMap[accessory.uniqueIdentifier]?.name ?? String(localized: "未分配房间")
+        let prefix = String(localized: "HomeKit 被动事件：\(accessory.name)（\(location)）")
 
         switch characteristic.characteristicType {
         case HMCharacteristicTypeMotionDetected:
             guard let motion = boolValue(characteristic.value), motion else { return nil }
-            return "\(prefix)检测到活动。"
+            return String(localized: "\(prefix)检测到活动。")
         case HMCharacteristicTypeContactState:
             guard let raw = intValue(characteristic.value) else { return nil }
             // 0 = contact detected (closed), 1 = no contact (open)
-            return raw == 1 ? "\(prefix)已打开。" : "\(prefix)已关闭。"
+            return raw == 1 ? String(localized: "\(prefix)已打开。") : String(localized: "\(prefix)已关闭。")
         case HMCharacteristicTypePowerState:
             guard let on = boolValue(characteristic.value) else { return nil }
-            return on ? "\(prefix)已开启电源。" : "\(prefix)已关闭电源。"
+            return on ? String(localized: "\(prefix)已开启电源。") : String(localized: "\(prefix)已关闭电源。")
         case HMCharacteristicTypeOutletInUse:
             guard let inUse = boolValue(characteristic.value) else { return nil }
-            return inUse ? "\(prefix)处于用电状态。" : "\(prefix)结束用电状态。"
+            return inUse ? String(localized: "\(prefix)处于用电状态。") : String(localized: "\(prefix)结束用电状态。")
         default:
             return nil
         }

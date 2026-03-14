@@ -45,8 +45,8 @@ extension CareContact {
     /// Name used in the confirmation sentence, e.g. "你的女儿（Annie）".
     var confirmationName: String {
         if relation.isEmpty { return realName }
-        if realName.isEmpty { return "你的\(relation)" }
-        return "你的\(relation)（\(realName)）"
+        if realName.isEmpty { return String(localized: "你的\(relation)") }
+        return String(localized: "你的\(relation)（\(realName)）")
     }
 
     /// Tokens used by local intent matching.

@@ -353,7 +353,7 @@ final class FaceRecognitionService: FrameConsumer {
         let result = FaceResult(
             id: tracked.trackingID,
             personID: contactID,
-            name: tracked.matchedName ?? "未知",
+            name: tracked.matchedName ?? String(localized: "未知"),
             relationship: tracked.matchedRelationship,
             confidence: tracked.matchSimilarity,
             boundingBox: tracked.lastBoundingBox

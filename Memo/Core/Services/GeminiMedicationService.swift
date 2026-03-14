@@ -54,7 +54,13 @@ final class GeminiMedicationService {
         let base64 = imageData.base64EncodedString()
         let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=\(apiKey)")!
 
-        let prompt = """
+        let isEnglish = Locale.current.language.languageCode?.identifier == "en"
+        let prompt = isEnglish ? """
+        You are a care assistant for Alzheimer's patients. Identify the most prominent item in the image.
+        Return JSON format: {"item": "item name", "emoji": "corresponding emoji", "description": "brief scene description"}
+        If no obvious item, return: {"item": "Unknown", "emoji": "📍", "description": "No obvious item"}
+        Only return JSON, no other content.
+        """ : """
         你是阿尔茨海默症患者的看护助手。识别画面中最显眼的物品。
         返回JSON格式：{"item": "物品中文名", "emoji": "一个对应emoji", "description": "简短场景描述"}
         如果没有明显物品，返回：{"item": "未知", "emoji": "📍", "description": "无明显物品"}
@@ -91,7 +97,8 @@ final class GeminiMedicationService {
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: String],
               let item = json["item"], let emoji = json["emoji"], let desc = json["description"]
         else {
-            return GeminiItemResult(item: "未知", emoji: "📍", description: text)
+            let unknownText = Locale.current.language.languageCode?.identifier == "en" ? "Unknown" : "未知"
+            return GeminiItemResult(item: unknownText, emoji: "📍", description: text)
         }
         return GeminiItemResult(item: item, emoji: emoji, description: desc)
     }
