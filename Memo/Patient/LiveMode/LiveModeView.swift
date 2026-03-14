@@ -127,8 +127,7 @@ struct LiveModeView: View {
                 }
                 // Face recognition badges
                 ForEach(Array(orchestrator.stateStore.visibleFaces.values), id: \.id) { face in
-                    let displayText = face.relationship != nil ? "\(face.relationship!): \(face.name)" : face.name
-                    CapsuleHint(text: displayText)
+                    CapsuleHint(text: face.displayName)
                 }
                 // Tracking status — only in find mode
                 if feature == .find, let mgr = findManager {

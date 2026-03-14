@@ -27,6 +27,10 @@ struct FaceResult: Sendable, Identifiable {
     let boundingBox: CGRect
     let timestamp: Date
 
+    var displayName: String {
+        relationship.map { "\($0): \(name)" } ?? name
+    }
+
     init(
         id: UUID = UUID(),
         personID: String,

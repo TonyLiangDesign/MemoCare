@@ -427,25 +427,16 @@ final class FindItemManager: NSObject, FrameConsumer {
 
         for room in sorted {
             guard !Task.isCancelled else { break }
-            logger.info("[RoomDetect] Trying room: \(room.displayName) (id=\(room.roomID), status=\(room.status))")
-
-            let mapURL = store.roomMapURL(for: room.roomID)
-            let fileExists = FileManager.default.fileExists(atPath: mapURL.path)
-            logger.info("[RoomDetect]   Map file exists: \(fileExists), path: \(mapURL.path)")
 
             guard let data = store.loadRoomWorldMap(roomID: room.roomID) else {
-                logger.warning("[RoomDetect]   loadRoomWorldMap returned nil — skipping")
                 continue
             }
-            logger.info("[RoomDetect]   Map loaded: \(data.count) bytes")
 
             guard let worldMap = try? NSKeyedUnarchiver.unarchivedObject(
                 ofClass: ARWorldMap.self, from: data
             ) else {
-                logger.warning("[RoomDetect]   NSKeyedUnarchiver failed — skipping")
                 continue
             }
-            logger.info("[RoomDetect]   WorldMap OK, anchors: \(worldMap.anchors.count), rawFeaturePoints: \(worldMap.rawFeaturePoints.points.count)")
 
             relocalized = false
             trackingState = .relocating
@@ -455,27 +446,23 @@ final class FindItemManager: NSObject, FrameConsumer {
             runSessionWithReset(config, on: arView)
 
             // Wait up to 5 seconds for relocalization
-            // Note: we check trackingState == .normal directly, not `relocalized`,
-            // because `relocalized` is only set when mode == .find (which it isn't during detection).
             var sawRelocalizing = false
-            for tick in 0..<10 {
+            for _ in 0..<10 {
                 guard !Task.isCancelled else { break }
                 try? await Task.sleep(for: .milliseconds(500))
-                if case .relocating = trackingState { sawRelocalizing = true }
+
                 let trackingStr = String(describing: trackingState).lowercased()
                 if trackingStr.contains("relocaliz") { sawRelocalizing = true }
-                let isNormal = trackingState == .normal
-                logger.info("[RoomDetect]   tick \(tick): tracking=\(String(describing: self.trackingState)), sawRelocalizing=\(sawRelocalizing), isNormal=\(isNormal)")
-                if isNormal && sawRelocalizing {
+
+                if trackingState == .normal && sawRelocalizing {
                     detectedRoomID = room.roomID
                     isDetectingRoom = false
                     relocalized = true
                     statusMessage = String(localized: "已识别：\(room.displayName)")
-                    logger.info("[RoomDetect] ✅ Matched room: \(room.displayName)")
+                    logger.info("[RoomDetect] ✅ Matched: \(room.displayName)")
                     return
                 }
             }
-            logger.info("[RoomDetect]   ❌ Timeout for room: \(room.displayName)")
             guard !Task.isCancelled else { break }
         }
 
