@@ -9,7 +9,7 @@ struct SetupSheet: View {
     @Environment(APIKeyStore.self) private var apiKeyStore
     @Environment(\.dismiss) private var dismiss
 
-    @State private var selectedDeployment: DeploymentProfile = .cloud
+    @State private var selectedDeployment: DeploymentProfile = .local
     @State private var baseURL = ""
     @State private var everMemOSToken = ""
     @State private var deepSeekKey = ""
