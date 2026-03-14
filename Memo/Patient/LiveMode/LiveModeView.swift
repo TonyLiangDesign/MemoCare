@@ -515,7 +515,7 @@ struct LiveModeView: View {
             startFaceRecognition()
 
             // Start HomeKit monitoring
-            homeKitService.start(modelContext: modelContext, apiClient: apiKeyStore.buildAPIClient())
+            homeKitService.start(context: modelContext, client: apiKeyStore.buildAPIClient())
 
             guard !readyRooms.isEmpty else {
                 logger.info("[Lifecycle] No ready rooms, skipping room detection")
