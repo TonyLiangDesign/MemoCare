@@ -76,6 +76,9 @@ struct LiveModeView: View {
         .ignoresSafeArea()
         .statusBarHidden()
         .fullScreenCover(isPresented: $showPractice) { DailyPracticeView() }
+        .task {
+            homeKitService.start(context: modelContext, client: apiKeyStore.buildAPIClient())
+        }
         .onAppear { startLiveMode() }
         .onDisappear { stopAll() }
         .onChange(of: recordFeature.phase) {
@@ -513,9 +516,6 @@ struct LiveModeView: View {
             orchestrator.attach(to: multiplexer)
             orchestrator.start()
             startFaceRecognition()
-
-            // Start HomeKit monitoring
-            homeKitService.start(context: modelContext, client: apiKeyStore.buildAPIClient())
 
             guard !readyRooms.isEmpty else {
                 logger.info("[Lifecycle] No ready rooms, skipping room detection")
