@@ -14,6 +14,7 @@ struct MemoApp: App {
     @State private var geminiMedicationService: GeminiMedicationService
     @State private var homeKitPassiveEventService = HomeKitPassiveEventService()
     @State private var dailyMemoryService = DailyMemoryService()
+    @State private var deviceIDManager = DeviceIDManager()
     @State private var showSetup = false
 
     init() {
@@ -70,6 +71,7 @@ struct MemoApp: App {
             .environment(geminiMedicationService)
             .environment(homeKitPassiveEventService)
             .environment(dailyMemoryService)
+            .environment(deviceIDManager)
             .sheet(isPresented: $showSetup) {
                 SetupSheet()
                     .environment(apiKeyStore)
