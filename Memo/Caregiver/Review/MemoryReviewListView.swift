@@ -23,13 +23,13 @@ struct MemoryReviewListView: View {
             .overlay {
                 if pendingEvents.isEmpty {
                     ContentUnavailableView(
-                        "暂无记忆",
+                        String(localized: "暂无记忆"),
                         systemImage: "brain",
-                        description: Text("患者记录的内容会出现在这里")
+                        description: Text(String(localized: "患者记录的内容会出现在这里"))
                     )
                 }
             }
-            .navigationTitle("记忆审核")
+            .navigationTitle(String(localized: "记忆审核"))
             .roleSwitchToolbar()
             .sheet(item: $editingEvent) { event in
                 MemoryEditView(event: event)
@@ -53,7 +53,7 @@ struct MemoryReviewListView: View {
             if let corrected = event.correctedContent {
                 HStack(spacing: 4) {
                     Image(systemName: "pencil.line")
-                    Text("原文：\(event.content)")
+                    Text(String(localized: "原文：\(event.content)"))
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -61,14 +61,14 @@ struct MemoryReviewListView: View {
 
             HStack(spacing: 12) {
                 if event.reviewStatus == .pendingReview {
-                    Button("批准") { approve(event) }
+                    Button(String(localized: "批准")) { approve(event) }
                         .buttonStyle(.bordered)
                         .tint(.green)
                 }
-                Button("更正") { editingEvent = event }
+                Button(String(localized: "更正")) { editingEvent = event }
                     .buttonStyle(.bordered)
                     .tint(.blue)
-                Button("删除") { deleteEvent(event) }
+                Button(String(localized: "删除")) { deleteEvent(event) }
                     .buttonStyle(.bordered)
                     .tint(.red)
             }

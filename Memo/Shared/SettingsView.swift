@@ -1,6 +1,9 @@
 import SwiftUI
 import SwiftData
 import EverMemOSKit
+import os.log
+
+private let logger = Logger(subsystem: "com.MrPolpo.MemoCare", category: "SettingsView")
 
 // MARK: - Reusable API Key Field
 
@@ -51,10 +54,10 @@ private struct APIKeyField: View {
 
         if isConfigured && input.isEmpty {
             HStack {
-                Label("已配置", systemImage: "checkmark.circle.fill")
+                Label(String(localized: "已配置"), systemImage: "checkmark.circle.fill")
                     .foregroundStyle(.green)
                 Spacer()
-                Button("删除", role: .destructive) {
+                Button(String(localized: "删除"), role: .destructive) {
                     onDelete()
                     input = ""
                     isRevealed = false
@@ -64,7 +67,7 @@ private struct APIKeyField: View {
         }
 
         if hasUnsavedInput {
-            Button("保存") {
+            Button(String(localized: "保存")) {
                 onSave(input)
                 input = ""
                 isRevealed = false
@@ -94,31 +97,31 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("角色") {
+                Section(String(localized: "角色")) {
                     HStack {
-                        Text("当前角色")
+                        Text(String(localized: "当前角色"))
                         Spacer()
-                        Text(roleManager.currentRole == .patient ? "患者" : "照护者")
+                        Text(roleManager.currentRole == .patient ? String(localized: "患者") : String(localized: "照护者"))
                             .foregroundStyle(.secondary)
                     }
 
-                    Button("切换角色") {
+                    Button(String(localized: "切换角色")) {
                         roleManager.toggleRole()
                     }
                 }
 
-                Section(header: Text("患者界面模式"), footer: Text("融合模式：AR 画面常驻，底部切换功能。分离模式：三个功能独立入口，更简洁。")) {
+                Section(header: Text(String(localized: "患者界面模式")), footer: Text(String(localized: "融合模式：AR 画面常驻，底部切换功能。分离模式：三个功能独立入口，更简洁。"))) {
                     @Bindable var mm = patientModeManager
-                    Picker("模式", selection: $mm.mode) {
-                        Text("融合模式").tag(PatientModeManager.Mode.combined)
-                        Text("分离模式").tag(PatientModeManager.Mode.split)
+                    Picker(String(localized: "模式"), selection: $mm.mode) {
+                        Text(String(localized: "融合模式")).tag(PatientModeManager.Mode.combined)
+                        Text(String(localized: "分离模式")).tag(PatientModeManager.Mode.split)
                     }
                     .pickerStyle(.segmented)
                 }
 
                 everMemOSSection
 
-                Section(header: Text("DeepSeek AI 对话"), footer: Text("用于「问一问」AI 对话功能")) {
+                Section(header: Text(String(localized: "DeepSeek AI 对话")), footer: Text(String(localized: "用于「问一问」AI 对话功能"))) {
                     APIKeyField(
                         storedValue: apiKeyStore.deepSeekAPIKey,
                         onSave: { apiKeyStore.saveDeepSeekAPIKey($0) },
@@ -126,7 +129,7 @@ struct SettingsView: View {
                     )
                 }
 
-                Section(header: Text("Gemini AI 用药监控"), footer: Text("用于摄像头自动识别服药行为")) {
+                Section(header: Text(String(localized: "Gemini AI 用药监控")), footer: Text(String(localized: "用于摄像头自动识别服药行为"))) {
                     APIKeyField(
                         storedValue: apiKeyStore.geminiAPIKey,
                         onSave: { apiKeyStore.saveGeminiAPIKey($0) },
@@ -134,36 +137,36 @@ struct SettingsView: View {
                     )
                 }
 
-                Section("演示") {
-                    Button("注入演示数据") {
+                Section(String(localized: "演示")) {
+                    Button(String(localized: "注入演示数据")) {
                         showResetConfirm = true
                     }
 
                     if resetDone {
-                        Label("演示数据已注入", systemImage: "checkmark.circle.fill")
+                        Label(String(localized: "演示数据已注入"), systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                     }
                 }
 
-                Section("关于") {
+                Section(String(localized: "关于")) {
                     HStack {
-                        Text("版本")
+                        Text(String(localized: "版本"))
                         Spacer()
                         Text("0.1.0")
                             .foregroundStyle(.secondary)
                     }
                 }
             }
-            .navigationTitle("设置")
+            .navigationTitle(String(localized: "设置"))
             .roleSwitchToolbar()
-            .alert("重置数据", isPresented: $showResetConfirm) {
-                Button("取消", role: .cancel) {}
-                Button("确认重置", role: .destructive) {
+            .alert(String(localized: "重置数据"), isPresented: $showResetConfirm) {
+                Button(String(localized: "取消"), role: .cancel) {}
+                Button(String(localized: "确认重置"), role: .destructive) {
                     DemoSeed.seed(context: modelContext)
                     resetDone = true
                 }
             } message: {
-                Text("将清除所有数据并注入演示数据")
+                Text(String(localized: "将清除所有数据并注入演示数据"))
             }
         }
     }
@@ -171,10 +174,10 @@ struct SettingsView: View {
     // MARK: - EverMemOS Section
 
     private var everMemOSSection: some View {
-        Section(header: Text("EverMemOS"), footer: selectedDeployment == .local ? Text("本地模式需输入 Mac 局域网 IP（非 localhost），如 http://192.168.1.x:1995") : nil) {
-            Picker("部署模式", selection: $selectedDeployment) {
-                Text("云端").tag(DeploymentProfile.cloud)
-                Text("本地").tag(DeploymentProfile.local)
+        Section(header: Text("EverMemOS"), footer: selectedDeployment == .local ? Text(String(localized: "本地模式需输入 Mac 局域网 IP（非 localhost），如 http://192.168.1.x:1995")) : nil) {
+            Picker(String(localized: "部署模式"), selection: $selectedDeployment) {
+                Text(String(localized: "云端")).tag(DeploymentProfile.cloud)
+                Text(String(localized: "本地")).tag(DeploymentProfile.local)
             }
             .pickerStyle(.segmented)
             .onChange(of: selectedDeployment) { _, newValue in
@@ -200,7 +203,7 @@ struct SettingsView: View {
             }
 
             if everMemOSBaseURL != apiKeyStore.everMemOSBaseURL {
-                Button("保存 Base URL") {
+                Button(String(localized: "保存 Base URL")) {
                     apiKeyStore.saveEverMemOSBaseURL(everMemOSBaseURL)
                 }
             }
@@ -209,7 +212,7 @@ struct SettingsView: View {
                 testConnection()
             } label: {
                 HStack {
-                    Text("测试连接")
+                    Text(String(localized: "测试连接"))
                     Spacer()
                     switch connectionStatus {
                     case .idle:
@@ -231,12 +234,25 @@ struct SettingsView: View {
 
     private func testConnection() {
         connectionStatus = .testing
+        print("🔍 [Settings] Testing connection - deployment: \(apiKeyStore.deploymentMode.rawValue), baseURL: \(apiKeyStore.everMemOSBaseURL)")
+        logger.info("🔍 [Settings] Testing connection - deployment: \(apiKeyStore.deploymentMode.rawValue), baseURL: \(apiKeyStore.everMemOSBaseURL)")
+
         guard let client = apiKeyStore.buildAPIClient() else {
+            print("❌ [Settings] Failed to build API client")
+            logger.error("❌ [Settings] Failed to build API client")
             connectionStatus = .failure
             return
         }
+
+        print("✅ [Settings] API client built successfully")
+        logger.info("✅ [Settings] API client built successfully")
+
         Task {
+            print("🌐 [Settings] Calling isReachable()...")
+            logger.info("🌐 [Settings] Calling isReachable()...")
             let reachable = await client.isReachable()
+            print("📡 [Settings] isReachable result: \(reachable)")
+            logger.info("📡 [Settings] isReachable result: \(reachable)")
             connectionStatus = reachable ? .success : .failure
         }
     }

@@ -20,16 +20,16 @@ struct RecommendationDetailView: View {
                 }
                 .padding()
             }
-            .navigationTitle("建议详情")
+            .navigationTitle(String(localized: "建议详情"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭") { dismiss() }
+                    Button(String(localized: "关闭")) { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Menu("操作", systemImage: "ellipsis.circle") {
-                        Button("接受", systemImage: "checkmark") { accept() }
-                        Button("忽略", systemImage: "xmark") { dismissRec() }
+                    Menu(String(localized: "操作"), systemImage: "ellipsis.circle") {
+                        Button(String(localized: "接受"), systemImage: "checkmark") { accept() }
+                        Button(String(localized: "忽略"), systemImage: "xmark") { dismissRec() }
                     }
                 }
             }
@@ -50,7 +50,7 @@ struct RecommendationDetailView: View {
 
     private var contextSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("情况说明")
+            Text(String(localized: "情况说明"))
                 .font(.headline)
             Text(recommendation.context)
                 .font(.body)
@@ -62,7 +62,7 @@ struct RecommendationDetailView: View {
 
     private var suggestionSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("建议措施")
+            Text(String(localized: "建议措施"))
                 .font(.headline)
             Text(recommendation.suggestion)
                 .font(.body)
@@ -73,9 +73,9 @@ struct RecommendationDetailView: View {
 
     private var evidenceSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("相关证据")
+            Text(String(localized: "相关证据"))
                 .font(.headline)
-            Text("\(recommendation.evidenceIDs.count) 条记录")
+            Text(String(localized: "\(recommendation.evidenceIDs.count) 条记录"))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -83,16 +83,16 @@ struct RecommendationDetailView: View {
 
     private var notesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("备注")
+            Text(String(localized: "备注"))
                 .font(.headline)
-            TextField("添加备注...", text: $notes, axis: .vertical)
+            TextField(String(localized: "添加备注..."), text: $notes, axis: .vertical)
                 .textFieldStyle(.roundedBorder)
                 .lineLimit(3...6)
         }
     }
 
     private var confidenceBadge: some View {
-        Text("置信度 \(Int(recommendation.confidence * 100))%")
+        Text(String(localized: "置信度 \(Int(recommendation.confidence * 100))%"))
             .font(.caption)
             .foregroundStyle(.secondary)
     }

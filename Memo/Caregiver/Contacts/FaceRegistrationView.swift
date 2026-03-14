@@ -42,7 +42,7 @@ struct FaceRegistrationView: View {
             actionSection
             statusSection
         }
-        .navigationTitle("人脸注册")
+        .navigationTitle(String(localized: "人脸注册"))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { loadSamples() }
         .fullScreenCover(isPresented: $showCamera) {
@@ -51,11 +51,11 @@ struct FaceRegistrationView: View {
             }
             .onDisappear { loadSamples() }
         }
-        .alert("删除全部人脸数据？", isPresented: $showDeleteConfirm) {
-            Button("删除", role: .destructive) { deleteAll() }
-            Button("取消", role: .cancel) {}
+        .alert(String(localized: "删除全部人脸数据？"), isPresented: $showDeleteConfirm) {
+            Button(String(localized: "删除"), role: .destructive) { deleteAll() }
+            Button(String(localized: "取消"), role: .cancel) {}
         } message: {
-            Text("将删除所有样本照片和已生成的特征数据，此操作不可恢复。")
+            Text(String(localized: "将删除所有样本照片和已生成的特征数据，此操作不可恢复。"))
         }
     }
 
@@ -65,9 +65,9 @@ struct FaceRegistrationView: View {
         Section {
             if sampleImages.isEmpty {
                 ContentUnavailableView(
-                    "暂无样本",
+                    String(localized: "暂无样本"),
                     systemImage: "person.crop.rectangle.badge.plus",
-                    description: Text("点击下方按钮开始采集人脸样本")
+                    description: Text(String(localized: "点击下方按钮开始采集人脸样本"))
                 )
                 .listRowBackground(Color.clear)
             } else {
@@ -97,9 +97,9 @@ struct FaceRegistrationView: View {
                 .padding(.vertical, 4)
             }
         } header: {
-            Text("样本照片")
+            Text(String(localized: "样本照片"))
         } footer: {
-            Text("已采集 \(sampleCount) 张，需要至少 5 张（最多 10 张）")
+            Text(String(localized: "已采集 \(sampleCount) 张，需要至少 5 张（最多 10 张）"))
         }
     }
 
@@ -109,20 +109,20 @@ struct FaceRegistrationView: View {
                 Button {
                     showCamera = true
                 } label: {
-                    Label("开始采集", systemImage: "camera.fill")
+                    Label(String(localized: "开始采集"), systemImage: "camera.fill")
                 }
             } else {
                 Button {
                     showCamera = true
                 } label: {
-                    Label("继续采集", systemImage: "camera.fill")
+                    Label(String(localized: "继续采集"), systemImage: "camera.fill")
                 }
                 .disabled(sampleCount >= 10)
 
                 Button(role: .destructive) {
                     showDeleteConfirm = true
                 } label: {
-                    Label("删除全部", systemImage: "trash")
+                    Label(String(localized: "删除全部"), systemImage: "trash")
                 }
             }
 
@@ -130,7 +130,7 @@ struct FaceRegistrationView: View {
                 Button {
                     generateEmbedding()
                 } label: {
-                    Label("生成特征", systemImage: "cpu")
+                    Label(String(localized: "生成特征"), systemImage: "cpu")
                 }
                 .disabled(isGenerating)
             }
@@ -144,19 +144,19 @@ struct FaceRegistrationView: View {
             EmptyView()
         case .readyToGenerate:
             Section {
-                Label("样本充足，可以生成特征", systemImage: "checkmark.circle")
+                Label(String(localized: "样本充足，可以生成特征"), systemImage: "checkmark.circle")
                     .foregroundStyle(.green)
             }
         case .generating(let progress):
             Section {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("正在生成特征...")
+                    Text(String(localized: "正在生成特征..."))
                     ProgressView(value: progress)
                 }
             }
         case .completed:
             Section {
-                Label("特征已保存（v\(contact.faceVersion)，\(contact.faceSampleCount)张样本）",
+                Label(String(localized: "特征已保存（v\(contact.faceVersion)，\(contact.faceSampleCount)张样本）"),
                       systemImage: "checkmark.circle.fill")
                     .foregroundStyle(.green)
             }
@@ -169,7 +169,7 @@ struct FaceRegistrationView: View {
 
         if !embeddingService.isAvailable {
             Section {
-                Label("人脸识别模型未加载，无法生成特征", systemImage: "exclamationmark.triangle")
+                Label(String(localized: "人脸识别模型未加载，无法生成特征"), systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
                     .font(.caption)
             }
@@ -225,7 +225,7 @@ struct FaceRegistrationView: View {
 
                 phase = .completed
             } catch {
-                phase = .error("生成失败：\(error.localizedDescription)")
+                phase = .error(String(localized: "生成失败：\(error.localizedDescription)"))
             }
         }
     }

@@ -110,17 +110,17 @@ struct RoomListView: View {
 
         if !unassigned.isEmpty {
             let grouped = Dictionary(grouping: unassigned) { $0.roomName }
-            Section(header: Text("未分配设备")) {
+            Section(header: Text(String(localized: "未分配设备"))) {
                 ForEach(grouped.keys.sorted(), id: \.self) { hkRoom in
                     let devices = grouped[hkRoom]!
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(hkRoom).font(.subheadline)
-                            Text("\(devices.count) 个传感器")
+                            Text(String(localized: "\(devices.count) 个传感器"))
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Button("创建房间") {
+                        Button(String(localized: "创建房间")) {
                             createRoomFromHomeKit(name: hkRoom)
                         }
                         .font(.caption)

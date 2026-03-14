@@ -32,6 +32,11 @@ struct DemoSeed {
         CaregiverRecommendation.self,
     ]
 
+    /// Check if current locale is English
+    fileprivate static var isEnglish: Bool {
+        Locale.current.language.languageCode?.identifier == "en"
+    }
+
     static func seed(context: ModelContext) {
         // 1. 只清除要重新注入的数据（保留 Room、SpatialAnchor、CareContact）
         for type in seededModelTypes {
@@ -67,11 +72,16 @@ extension MedicationPlan: DemoSeedable {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
 
-        let items: [(String, Int, Int, Bool, Bool)] = [
+        let items: [(String, Int, Int, Bool, Bool)] = DemoSeed.isEnglish ? [
+            // (medication, hour, minute, daily repeat, confirmed)
+            ("Blood Pressure Med", 20, 0, true, false),
+            ("Aspirin", 8, 0, true, true),
+            ("Vitamin D", 12, 30, true, false),
+        ] : [
             // (药名, 时, 分, 每日重复, 已确认)
-            ("降压药",  20, 0, true,  false),
-            ("阿司匹林", 8, 0, true,  true),
-            ("维生素D",  12, 30, true, false),
+            ("降压药", 20, 0, true, false),
+            ("阿司匹林", 8, 0, true, true),
+            ("维生素D", 12, 30, true, false),
         ]
 
         var plans: [MedicationPlan] = []
@@ -85,7 +95,7 @@ extension MedicationPlan: DemoSeedable {
             plan.repeatDaily = repeats
             if confirmed {
                 plan.isConfirmed = true
-                plan.confirmedAt = time.addingTimeInterval(600) // 确认于计划后 10 分钟
+                plan.confirmedAt = time.addingTimeInterval(600)
             }
             context.insert(plan)
             plans.append(plan)
@@ -103,9 +113,11 @@ extension Foresight: DemoSeedable {
     static func seedDemo(context: ModelContext, refs: DemoRefs) -> [Foresight] {
         var foresights: [Foresight] = []
         for plan in refs.plans {
+            let content = DemoSeed.isEnglish ? "Take \(plan.medicationName)" : "服用\(plan.medicationName)"
+            let evidence = DemoSeed.isEnglish ? "Medication plan created by caregiver" : "照护者创建的用药计划"
             let f = Foresight(
-                content: "服用\(plan.medicationName)",
-                evidence: "照护者创建的用药计划",
+                content: content,
+                evidence: evidence,
                 startTime: plan.scheduledTime.addingTimeInterval(-1800),
                 endTime: plan.scheduledTime,
                 parentType: "medication_plan",
@@ -123,11 +135,16 @@ extension Foresight: DemoSeedable {
 extension CareContact: DemoSeedable {
     @discardableResult
     static func seedDemo(context: ModelContext, refs: DemoRefs) -> [CareContact] {
-        let data: [(String, String, String, String)] = [
-            ("女儿",  "Annie",  "+64 21 123 4567", "安妮,annie,我女儿"),
-            ("儿子",  "小明",   "+86 138 0000 1234", "明明,我儿子"),
-            ("老伴",  "张阿姨",  "+86 139 0000 5678", "老张,张姐"),
-            ("护工",  "李姐",   "+86 135 0000 9999", "小李,李护工"),
+        let data: [(String, String, String, String)] = DemoSeed.isEnglish ? [
+            ("Daughter", "Annie", "+64 21 123 4567", "my daughter"),
+            ("Son", "Tom", "+86 138 0000 1234", "my son"),
+            ("Spouse", "Mary", "+86 139 0000 5678", "my wife"),
+            ("Caregiver", "Lisa", "+86 135 0000 9999", "nurse"),
+        ] : [
+            ("女儿", "Annie", "+64 21 123 4567", "安妮,annie,我女儿"),
+            ("儿子", "小明", "+86 138 0000 1234", "明明,我儿子"),
+            ("老伴", "张阿姨", "+86 139 0000 5678", "老张,张姐"),
+            ("护工", "李姐", "+86 135 0000 9999", "小李,李护工"),
         ]
         var contacts: [CareContact] = []
         for (relation, name, phone, aliases) in data {
@@ -145,7 +162,11 @@ extension CareContact: DemoSeedable {
 extension RoomProfile: DemoSeedable {
     @discardableResult
     static func seedDemo(context: ModelContext, refs: DemoRefs) -> [RoomProfile] {
-        let data: [(String, String, RoomStatus)] = [
+        let data: [(String, String, RoomStatus)] = DemoSeed.isEnglish ? [
+            ("Living Room", "📺", .ready),
+            ("Bedroom", "🛏️", .ready),
+            ("Kitchen", "🍳", .ready),
+        ] : [
             ("客厅", "📺", .ready),
             ("卧室", "🛏️", .ready),
             ("厨房", "🍳", .ready),
@@ -171,12 +192,18 @@ extension SpatialAnchor: DemoSeedable {
         let bedroomID = refs.rooms.count > 1 ? refs.rooms[1].roomID : nil
         let kitchenID = refs.rooms.count > 2 ? refs.rooms[2].roomID : nil
 
-        let items: [(String, String, String?)] = [
-            ("钥匙",  "🔑", livingRoomID),
-            ("眼镜",  "👓", bedroomID),
+        let items: [(String, String, String?)] = DemoSeed.isEnglish ? [
+            ("Keys", "🔑", livingRoomID),
+            ("Glasses", "👓", bedroomID),
+            ("Remote", "📱", livingRoomID),
+            ("Pill Box", "💊", kitchenID),
+            ("Phone", "📲", bedroomID),
+        ] : [
+            ("钥匙", "🔑", livingRoomID),
+            ("眼镜", "👓", bedroomID),
             ("遥控器", "📱", livingRoomID),
-            ("药盒",  "💊", kitchenID),
-            ("手机",  "📲", bedroomID),
+            ("药盒", "💊", kitchenID),
+            ("手机", "📲", bedroomID),
         ]
         var anchors: [SpatialAnchor] = []
         for (name, emoji, roomID) in items {

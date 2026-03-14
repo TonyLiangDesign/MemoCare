@@ -27,13 +27,13 @@ struct ContactsListView: View {
             .overlay {
                 if contacts.isEmpty {
                     ContentUnavailableView(
-                        "暂无联系人",
+                        String(localized: "暂无联系人"),
                         systemImage: "person.2",
-                        description: Text("点击右上角添加家人或紧急联系人")
+                        description: Text(String(localized: "点击右上角添加家人或紧急联系人"))
                     )
                 }
             }
-            .navigationTitle("联系人")
+            .navigationTitle(String(localized: "联系人"))
             .roleSwitchToolbar()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -59,21 +59,13 @@ struct ContactsListView: View {
                     .foregroundStyle(.blue)
 
                 if !contact.aliases.isEmpty {
-                    Text("别名：\(contact.aliases)")
+                    Text(String(localized: "别名：\(contact.aliases)"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
 
             Spacer()
-
-            VStack(spacing: 2) {
-                Image(systemName: contact.faceEnrolled ? "face.smiling.fill" : "face.dashed")
-                    .foregroundStyle(contact.faceEnrolled ? .green : .secondary)
-                Text(contact.faceStatusText)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
         }
         .padding(.vertical, 4)
     }

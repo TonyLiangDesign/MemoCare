@@ -34,7 +34,7 @@ struct SetupSheet: View {
                 headerSection
                 manualSections
             }
-            .navigationTitle("欢迎")
+            .navigationTitle(String(localized: "欢迎"))
             .navigationBarTitleDisplayMode(.inline)
             .interactiveDismissDisabled()
             .onAppear {
@@ -50,9 +50,9 @@ struct SetupSheet: View {
         Section {
             VStack(spacing: 8) {
                 AppIconView(size: 80)
-                Text("初始配置")
+                Text(String(localized: "初始配置"))
                     .font(.title2.bold())
-                Text("填写 API 密钥以启用核心功能")
+                Text(String(localized: "填写 API 密钥以启用核心功能"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -67,10 +67,10 @@ struct SetupSheet: View {
 
     private var manualSections: some View {
         Group {
-            Section(header: Text("EverMemOS 记忆服务"), footer: everMemOSFooter) {
-                Picker("部署模式", selection: $selectedDeployment) {
-                    Text("云端").tag(DeploymentProfile.cloud)
-                    Text("本地").tag(DeploymentProfile.local)
+            Section(header: Text(String(localized: "EverMemOS 记忆服务")), footer: everMemOSFooter) {
+                Picker(String(localized: "部署模式"), selection: $selectedDeployment) {
+                    Text(String(localized: "云端")).tag(DeploymentProfile.cloud)
+                    Text(String(localized: "本地")).tag(DeploymentProfile.local)
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: selectedDeployment) { _, newValue in
@@ -91,7 +91,7 @@ struct SetupSheet: View {
                     testConnection()
                 } label: {
                     HStack {
-                        Text("测试连接")
+                        Text(String(localized: "测试连接"))
                         Spacer()
                         switch connectionStatus {
                         case .idle: EmptyView()
@@ -108,13 +108,13 @@ struct SetupSheet: View {
                 .disabled(connectionStatus == .testing)
             }
 
-            Section(header: Text("DeepSeek AI 对话"), footer: Text("必填。用于「问一问」AI 对话功能。")) {
+            Section(header: Text(String(localized: "DeepSeek AI 对话")), footer: Text(String(localized: "必填。用于「问一问」AI 对话功能。"))) {
                 SecureField("DeepSeek API Key", text: $deepSeekKey)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
             }
 
-            Section(header: Text("Gemini AI 用药监控"), footer: Text("选填。已内置默认密钥，如需使用自己的密钥可在此覆盖。")) {
+            Section(header: Text(String(localized: "Gemini AI 用药监控")), footer: Text(String(localized: "选填。已内置默认密钥，如需使用自己的密钥可在此覆盖。"))) {
                 SecureField("Gemini API Key", text: $geminiKey)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -124,7 +124,7 @@ struct SetupSheet: View {
                 Button {
                     saveAll()
                 } label: {
-                    Text("完成配置")
+                    Text(String(localized: "完成配置"))
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
@@ -138,9 +138,9 @@ struct SetupSheet: View {
     @ViewBuilder
     private var everMemOSFooter: some View {
         if selectedDeployment == .local {
-            Text("本地模式需输入 Mac 局域网 IP（非 localhost），如 http://192.168.1.x:1995")
+            Text(String(localized: "本地模式需输入 Mac 局域网 IP（非 localhost），如 http://192.168.1.x:1995"))
         } else {
-            Text("云端模式需填写 API Token。")
+            Text(String(localized: "云端模式需填写 API Token。"))
         }
     }
 
@@ -148,17 +148,26 @@ struct SetupSheet: View {
 
     private func testConnection() {
         connectionStatus = .testing
+        logger.info("🔍 Testing connection - deployment: \(selectedDeployment.rawValue), baseURL: \(baseURL)")
+
         apiKeyStore.saveDeploymentMode(selectedDeployment)
         apiKeyStore.saveEverMemOSBaseURL(baseURL)
         if !everMemOSToken.isEmpty {
             apiKeyStore.saveEverMemOSToken(everMemOSToken)
         }
+
         guard let client = apiKeyStore.buildAPIClient() else {
+            logger.error("❌ Failed to build API client")
             connectionStatus = .failure
             return
         }
+
+        logger.info("✅ API client built successfully")
+
         Task {
+            logger.info("🌐 Calling isReachable()...")
             let reachable = await client.isReachable()
+            logger.info("📡 isReachable result: \(reachable)")
             connectionStatus = reachable ? .success : .failure
         }
     }

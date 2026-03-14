@@ -6,6 +6,14 @@ struct RecommendationsView: View {
         case recommendations = "建议"
         case cards = "卡片"
         case history = "历史"
+
+        var localizedString: String {
+            switch self {
+            case .recommendations: return String(localized: "建议")
+            case .cards: return String(localized: "卡片")
+            case .history: return String(localized: "历史")
+            }
+        }
     }
 
     @Environment(\.modelContext) private var modelContext
@@ -28,7 +36,7 @@ struct RecommendationsView: View {
             VStack(spacing: 0) {
                 Picker("", selection: $selectedTab) {
                     ForEach(Tab.allCases, id: \.self) { tab in
-                        Text(tab.rawValue).tag(tab)
+                        Text(tab.localizedString).tag(tab)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -44,12 +52,12 @@ struct RecommendationsView: View {
                     PracticeHistoryView()
                 }
             }
-            .navigationTitle("每日回忆")
+            .navigationTitle(String(localized: "每日回忆"))
             .roleSwitchToolbar()
             .toolbar {
                 if selectedTab == .recommendations {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("刷新", systemImage: "arrow.clockwise") {
+                        Button(String(localized: "刷新"), systemImage: "arrow.clockwise") {
                             Task { await refresh() }
                         }
                         .disabled(isLoading)
@@ -59,8 +67,8 @@ struct RecommendationsView: View {
             .sheet(item: $selectedRec) { rec in
                 RecommendationDetailView(recommendation: rec)
             }
-            .alert("错误", isPresented: .constant(errorMessage != nil)) {
-                Button("确定") { errorMessage = nil }
+            .alert(String(localized: "错误"), isPresented: .constant(errorMessage != nil)) {
+                Button(String(localized: "确定")) { errorMessage = nil }
             } message: {
                 Text(errorMessage ?? "")
             }
@@ -79,9 +87,9 @@ struct RecommendationsView: View {
 
     private var emptyState: some View {
         ContentUnavailableView(
-            "暂无建议",
+            String(localized: "暂无建议"),
             systemImage: "checkmark.circle",
-            description: Text("今天没有需要关注的事项")
+            description: Text(String(localized: "今天没有需要关注的事项"))
         )
     }
 
@@ -93,13 +101,13 @@ struct RecommendationsView: View {
                         selectedRec = rec
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button("忽略", systemImage: "xmark") {
+                        Button(String(localized: "忽略"), systemImage: "xmark") {
                             dismiss(rec)
                         }
                         .tint(.gray)
                     }
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                        Button("接受", systemImage: "checkmark") {
+                        Button(String(localized: "接受"), systemImage: "checkmark") {
                             accept(rec)
                         }
                         .tint(.green)

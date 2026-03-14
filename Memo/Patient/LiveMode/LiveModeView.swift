@@ -70,6 +70,8 @@ struct LiveModeView: View {
                 switchFeature(to: .idle)
             }
         }
+        .onChange(of: allContacts.count) { reloadFaceRecognition() }
+        .onChange(of: allContacts.map(\.faceVersion)) { reloadFaceRecognition() }
     }
 
     // MARK: - Top Status Bar
@@ -207,7 +209,7 @@ struct LiveModeView: View {
                 }
                 let unassigned = grouped[nil] ?? []
                 if !unassigned.isEmpty {
-                    Section("未分配") {
+                    Section(String(localized: "未分配")) {
                         ForEach(unassigned, id: \.anchorID) { item in
                             Button { beginFind(item: item) } label: {
                                 Label("\(item.emoji) \(item.itemName)", systemImage: "location.fill")
@@ -564,6 +566,12 @@ struct LiveModeView: View {
         // Update existing ChatViewModel with the now-available services
         chatViewModel?.perceptionState = orchestrator.stateStore
         chatViewModel?.faceRecognitionService = faceService
+    }
+
+    private func reloadFaceRecognition() {
+        guard let faceService = faceRecognitionService else { return }
+        logger.info("[Face] Reloading face recognition data, contacts=\(self.allContacts.count), enrolled=\(self.allContacts.filter(\.faceEnrolled).count)")
+        faceService.loadRegisteredFaces(contacts: allContacts)
     }
 
     private func stopAll() {

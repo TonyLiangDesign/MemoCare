@@ -20,13 +20,13 @@ struct PlansListView: View {
             .overlay {
                 if plans.isEmpty {
                     ContentUnavailableView(
-                        "暂无计划",
+                        String(localized: "暂无计划"),
                         systemImage: "pills",
-                        description: Text("点击右上角添加用药计划")
+                        description: Text(String(localized: "点击右上角添加用药计划"))
                     )
                 }
             }
-            .navigationTitle("计划")
+            .navigationTitle(String(localized: "计划"))
             .roleSwitchToolbar()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -46,11 +46,11 @@ struct PlansListView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(plan.medicationName)
                     .font(.headline)
-                Text("计划时间：\(plan.scheduledTime.timeOnlyString)")
+                Text(String(localized: "计划时间：\(plan.scheduledTime.timeOnlyString)"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 if plan.repeatDaily {
-                    Text("每日重复")
+                    Text(String(localized: "每日重复"))
                         .font(.caption)
                         .foregroundStyle(.blue)
                 }

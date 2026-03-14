@@ -14,23 +14,23 @@ struct AddContactView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("联系人信息") {
-                    TextField("关系（例：女儿）", text: $relation)
-                    TextField("真实姓名（例：Annie）", text: $realName)
-                    TextField("电话号码", text: $phoneNumber)
+                Section(String(localized: "联系人信息")) {
+                    TextField(String(localized: "关系（例：女儿）"), text: $relation)
+                    TextField(String(localized: "真实姓名（例：Annie）"), text: $realName)
+                    TextField(String(localized: "电话号码"), text: $phoneNumber)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.phonePad)
-                    TextField("别名（可选，逗号分隔）", text: $aliases)
+                    TextField(String(localized: "别名（可选，逗号分隔）"), text: $aliases)
                 }
             }
-            .navigationTitle("新增联系人")
+            .navigationTitle(String(localized: "新增联系人"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button(String(localized: "取消")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") { save() }
+                    Button(String(localized: "保存")) { save() }
                         .disabled(!canSave)
                 }
             }

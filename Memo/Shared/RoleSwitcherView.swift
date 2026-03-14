@@ -10,23 +10,23 @@ struct RoleSwitcherView: View {
 
             AppIconView(size: 100)
 
-            Text("欢迎使用")
+            Text(String(localized: "欢迎使用"))
                 .font(.largeTitle.bold())
 
-            Text("请选择您的角色")
+            Text(String(localized: "请选择您的角色"))
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
             VStack(spacing: 16) {
                 roleButton(
                     role: .patient,
-                    label: "我是患者",
+                    label: String(localized: "我是患者"),
                     icon: "person.fill",
                     color: .blue
                 )
                 roleButton(
                     role: .caregiver,
-                    label: "我是照护者",
+                    label: String(localized: "我是照护者"),
                     icon: "heart.fill",
                     color: .pink
                 )

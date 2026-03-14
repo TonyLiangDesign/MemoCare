@@ -14,25 +14,25 @@ struct ContactDetailView: View {
 
     var body: some View {
         List {
-            Section("基本信息") {
+            Section(String(localized: "基本信息")) {
                 if isEditing {
-                    TextField("关系（例：女儿）", text: $editRelation)
-                    TextField("真实姓名（例：Annie）", text: $editRealName)
-                    TextField("电话号码", text: $editPhoneNumber)
+                    TextField(String(localized: "关系（例：女儿）"), text: $editRelation)
+                    TextField(String(localized: "真实姓名（例：Annie）"), text: $editRealName)
+                    TextField(String(localized: "电话号码"), text: $editPhoneNumber)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.phonePad)
-                    TextField("别名（可选，逗号分隔）", text: $editAliases)
+                    TextField(String(localized: "别名（可选，逗号分隔）"), text: $editAliases)
                 } else {
-                    LabeledContent("关系", value: contact.relation)
-                    LabeledContent("姓名", value: contact.realName)
-                    LabeledContent("电话", value: contact.phoneNumber)
+                    LabeledContent(String(localized: "关系"), value: contact.relation)
+                    LabeledContent(String(localized: "姓名"), value: contact.realName)
+                    LabeledContent(String(localized: "电话"), value: contact.phoneNumber)
                     if !contact.aliases.isEmpty {
-                        LabeledContent("别名", value: contact.aliases)
+                        LabeledContent(String(localized: "别名"), value: contact.aliases)
                     }
                 }
             }
 
-            Section("人脸识别") {
+            Section(String(localized: "人脸识别")) {
                 HStack {
                     Image(systemName: contact.faceEnrolled ? "face.smiling.fill" : "face.dashed")
                         .foregroundStyle(contact.faceEnrolled ? .green : .secondary)
@@ -42,7 +42,7 @@ struct ContactDetailView: View {
                 NavigationLink {
                     FaceRegistrationView(contact: contact)
                 } label: {
-                    Label(contact.faceEnrolled ? "管理人脸" : "注册人脸",
+                    Label(contact.faceEnrolled ? String(localized: "管理人脸") : String(localized: "注册人脸"),
                           systemImage: "person.crop.rectangle.badge.plus")
                 }
             }
@@ -52,15 +52,15 @@ struct ContactDetailView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if isEditing {
-                    Button("保存") { saveEdits() }
+                    Button(String(localized: "保存")) { saveEdits() }
                         .disabled(!canSave)
                 } else {
-                    Button("编辑") { startEditing() }
+                    Button(String(localized: "编辑")) { startEditing() }
                 }
             }
             if isEditing {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { isEditing = false }
+                    Button(String(localized: "取消")) { isEditing = false }
                 }
             }
         }

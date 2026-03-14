@@ -28,27 +28,27 @@ struct CaregiverTabView: View {
         TabView {
             RecommendationsView()
                 .tabItem {
-                    Label("今日建议", systemImage: "lightbulb.fill")
+                    Label(String(localized: "今日建议"), systemImage: "lightbulb.fill")
                 }
 
             PlansListView()
                 .tabItem {
-                    Label("计划", systemImage: "pills.fill")
+                    Label(String(localized: "计划"), systemImage: "pills.fill")
                 }
 
             ContactsListView()
                 .tabItem {
-                    Label("联系人", systemImage: "person.2.fill")
+                    Label(String(localized: "联系人"), systemImage: "person.2.fill")
                 }
 
             RoomListView()
                 .tabItem {
-                    Label("空间建档", systemImage: "map.fill")
+                    Label(String(localized: "空间建档"), systemImage: "map.fill")
                 }
 
             SettingsView()
                 .tabItem {
-                    Label("设置", systemImage: "gearshape.fill")
+                    Label(String(localized: "设置"), systemImage: "gearshape.fill")
                 }
         }
     }

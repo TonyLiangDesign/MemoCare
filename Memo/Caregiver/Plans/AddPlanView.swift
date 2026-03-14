@@ -14,26 +14,26 @@ struct AddPlanView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("药物信息") {
-                    TextField("药物名称", text: $medicationName)
+                Section(String(localized: "药物信息")) {
+                    TextField(String(localized: "药物名称"), text: $medicationName)
                 }
 
-                Section("时间设置") {
-                    DatePicker("服药时间", selection: $scheduledTime, displayedComponents: .hourAndMinute)
+                Section(String(localized: "时间设置")) {
+                    DatePicker(String(localized: "服药时间"), selection: $scheduledTime, displayedComponents: .hourAndMinute)
 
-                    Stepper("允许提前 \(windowMinutes) 分钟", value: $windowMinutes, in: 5...120, step: 5)
+                    Stepper(String(localized: "允许提前 \(windowMinutes) 分钟"), value: $windowMinutes, in: 5...120, step: 5)
 
-                    Toggle("每日重复", isOn: $repeatDaily)
+                    Toggle(String(localized: "每日重复"), isOn: $repeatDaily)
                 }
             }
-            .navigationTitle("新增计划")
+            .navigationTitle(String(localized: "新增计划"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button(String(localized: "取消")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") { save() }
+                    Button(String(localized: "保存")) { save() }
                         .disabled(medicationName.isEmpty)
                 }
             }

@@ -28,11 +28,11 @@ struct AddRoomView: View {
                 }
                 .padding(20)
             }
-            .navigationTitle("选择房间")
+            .navigationTitle(String(localized: "选择房间"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button(String(localized: "取消")) { dismiss() }
                 }
             }
         }
@@ -68,7 +68,7 @@ struct AddRoomView: View {
 
         if !unboundRooms.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("从 HomeKit 导入")
+                Text(String(localized: "从 HomeKit 导入"))
                     .font(.subheadline.bold())
                     .foregroundStyle(.secondary)
 
@@ -81,7 +81,7 @@ struct AddRoomView: View {
                             VStack(spacing: 6) {
                                 Text(emoji).font(.system(size: 36))
                                 Text(hkRoom).font(.subheadline).lineLimit(1)
-                                Text("\(deviceCount) 设备")
+                                Text(String(localized: "\(deviceCount) 设备"))
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }

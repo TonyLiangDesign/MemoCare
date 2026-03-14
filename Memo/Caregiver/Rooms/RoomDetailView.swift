@@ -23,9 +23,9 @@ struct RoomDetailView: View {
         .fullScreenCover(isPresented: $showScan) {
             RoomScanView(room: room)
         }
-        .alert("选择房间图标", isPresented: $showEmojiPicker) {
-            TextField("输入 emoji", text: $emojiInput)
-            Button("确定") {
+        .alert(String(localized: "选择房间图标"), isPresented: $showEmojiPicker) {
+            TextField(String(localized: "输入 emoji"), text: $emojiInput)
+            Button(String(localized: "确定")) {
                 let trimmed = emojiInput.trimmingCharacters(in: .whitespacesAndNewlines)
                 if let first = trimmed.first, first.isEmoji {
                     room.emoji = String(first)
@@ -33,16 +33,16 @@ struct RoomDetailView: View {
                     try? modelContext.save()
                 }
             }
-            Button("取消", role: .cancel) {}
+            Button(String(localized: "取消"), role: .cancel) {}
         }
     }
 
     // MARK: - Room Info
 
     private var roomInfoSection: some View {
-        Section("房间信息") {
+        Section(String(localized: "房间信息")) {
             HStack {
-                Text("图标")
+                Text(String(localized: "图标"))
                 Spacer()
                 Button {
                     emojiInput = room.emoji
