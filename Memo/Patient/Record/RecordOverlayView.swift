@@ -27,8 +27,17 @@ struct RecordOverlayView: View {
                 .padding(.horizontal, 16)
             case .saving:
                 CapsuleHint(text: String(localized: "正在保存空间地图…"), showSpinner: true)
-            case .success:
-                EmptyView()
+            case .success(let item, let room):
+                VStack(spacing: 8) {
+                    Text(item).font(.title2.bold()).foregroundStyle(.white)
+                    if let roomName = room {
+                        Text(String(localized: "已保存到 \(roomName)"))
+                            .font(.callout)
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
+                }
+                .padding(20)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
             case .error(let msg):
                 Text(msg).font(.callout.bold()).foregroundStyle(.red)
                     .padding()

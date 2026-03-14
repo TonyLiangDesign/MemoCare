@@ -46,8 +46,8 @@ struct SplitRecordView: View {
                 .padding(.bottom, 48)
             }
 
-            if case .success(let name) = recordFeature.phase {
-                SuccessOverlay(name: name)
+            if case .success(let item, let room) = recordFeature.phase {
+                SuccessOverlay(name: item)
             }
         }
         .ignoresSafeArea()

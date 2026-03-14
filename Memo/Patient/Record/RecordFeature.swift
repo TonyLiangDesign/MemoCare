@@ -15,7 +15,7 @@ final class RecordFeature {
         case capturing
         case recognized(GeminiItemResult)
         case saving
-        case success(String)
+        case success(item: String, room: String?)
         case error(String)
     }
 
@@ -58,7 +58,7 @@ final class RecordFeature {
                     name: result.item, emoji: result.emoji,
                     anchorID: anchorID, roomID: roomID, in: arView
                 )
-                phase = .success("\(result.emoji) \(result.item)")
+                phase = .success(item: "\(result.emoji) \(result.item)", room: roomName)
                 memorizeToEverMemOS(result, roomName: roomName, client: apiClient)
                 try? await Task.sleep(for: .seconds(2))
                 phase = .ready

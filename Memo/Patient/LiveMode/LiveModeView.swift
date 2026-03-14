@@ -87,7 +87,8 @@ struct LiveModeView: View {
                 }
                 // Face recognition badges
                 ForEach(Array(orchestrator.stateStore.visibleFaces.values), id: \.id) { face in
-                    CapsuleHint(text: "\(face.relationship ?? face.name)")
+                    let displayText = face.relationship != nil ? "\(face.relationship!): \(face.name)" : face.name
+                    CapsuleHint(text: displayText)
                 }
                 // Tracking status — only in find mode
                 if feature == .find, let mgr = findManager {
@@ -319,7 +320,7 @@ struct LiveModeView: View {
                 logger.info("[WhoIs] Attempt \(attempt): \(matches.count) faces, best sim=\(matches.map(\.similarity).max() ?? 0)")
 
                 if !matches.isEmpty { anyFaceDetected = true }
-                let recognized = matches.filter { $0.similarity > 0.45 && $0.name != nil }
+                let recognized = matches.filter { $0.similarity > 0.30 && $0.name != nil }
                 if !recognized.isEmpty {
                     // Keep matches with highest similarity
                     let currentBest = bestMatches.map(\.similarity).max() ?? 0

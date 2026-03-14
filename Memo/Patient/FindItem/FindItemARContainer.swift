@@ -55,13 +55,14 @@ extension FindItemARContainer {
         let anchor = AnchorEntity(world: transform)
         let mesh = MeshResource.generateText(
             name,
-            extrusionDepth: 0.01,
+            extrusionDepth: 0.002,
             font: .systemFont(ofSize: 0.05, weight: .bold)
         )
-        let material = SimpleMaterial(color: color, isMetallic: false)
+        var material = UnlitMaterial(color: color)
+        material.blending = .transparent(opacity: 1.0)
         let entity = ModelEntity(mesh: mesh, materials: [material])
         entity.position.y += 0.08
-        // Center the text horizontally
+        entity.orientation = simd_quatf(angle: .pi, axis: [0, 1, 0])
         let bounds = entity.visualBounds(relativeTo: entity)
         entity.position.x -= bounds.extents.x / 2
         anchor.addChild(entity)

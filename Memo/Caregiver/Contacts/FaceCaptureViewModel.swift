@@ -248,7 +248,7 @@ final class FaceCaptureViewModel: NSObject {
         let bbox = face.boundingBox
 
         let area = bbox.width * bbox.height
-        guard area > 0.15 else {
+        guard area > 0.08 else {
             return QualityResult(ok: false, message: String(localized: "人脸太小，请靠近一些"))
         }
 
