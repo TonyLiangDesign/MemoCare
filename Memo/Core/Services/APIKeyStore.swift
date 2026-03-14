@@ -72,7 +72,8 @@ final class APIKeyStore {
             profile: deploymentMode,
             baseURL: url,
             auth: auth,
-            logLevel: .debug
+            logLevel: .debug,
+            deviceId: DeviceIDManager.shared.deviceID
         )
         return EverMemOSClient(config: config)
     }
