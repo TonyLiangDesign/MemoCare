@@ -18,12 +18,23 @@ struct CapsuleHint: View {
 /// 保存成功全屏覆盖层
 struct SuccessOverlay: View {
     let name: String
+    let room: String?
+
+    init(name: String, room: String? = nil) {
+        self.name = name
+        self.room = room
+    }
 
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 80)).foregroundStyle(.green)
             Text("已保存「\(name)」").font(.largeTitle.bold()).foregroundStyle(.white)
+            if let roomName = room {
+                Text("保存到 \(roomName)")
+                    .font(.title3)
+                    .foregroundStyle(.white.opacity(0.8))
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.black.opacity(0.6))

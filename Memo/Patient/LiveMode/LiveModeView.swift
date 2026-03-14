@@ -51,12 +51,25 @@ struct LiveModeView: View {
         ZStack {
             FindItemARContainer(holder: arHolder)
             VStack(spacing: 0) {
+                HStack {
+                    // Room emoji - top-left corner
+                    if let roomName = orchestrator.stateStore.currentRoomName,
+                       let emoji = roomName.first(where: { $0.isEmoji }) {
+                        Text(String(emoji))
+                            .font(.system(size: 32))
+                            .padding(8)
+                            .background(.ultraThinMaterial, in: Circle())
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 20).padding(.top, 56)
+
                 topStatusBar
                 Spacer()
                 middleContent
             }
-            if case .success(let item, _) = recordFeature.phase {
-                SuccessOverlay(name: item)
+            if case .success(let item, let room) = recordFeature.phase {
+                SuccessOverlay(name: item, room: room)
             }
         }
         .ignoresSafeArea()
@@ -78,27 +91,6 @@ struct LiveModeView: View {
 
     private var topStatusBar: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 6) {
-                // Room badge — only emoji
-                if let roomName = orchestrator.stateStore.currentRoomName,
-                   let emoji = roomName.first(where: { $0.isEmoji }) {
-                    Text(String(emoji))
-                        .font(.system(size: 32))
-                        .padding(8)
-                        .background(.ultraThinMaterial, in: Circle())
-                } else if let mgr = findManager, mgr.isDetectingRoom {
-                    CapsuleHint(text: mgr.statusMessage, showSpinner: true)
-                }
-                // Face recognition badges
-                ForEach(Array(orchestrator.stateStore.visibleFaces.values), id: \.id) { face in
-                    let displayText = face.relationship != nil ? "\(face.relationship!): \(face.name)" : face.name
-                    CapsuleHint(text: displayText)
-                }
-                // Tracking status — only in find mode
-                if feature == .find, let mgr = findManager {
-                    TrackingStatusBadge(manager: mgr)
-                }
-            }
             Spacer()
             VStack(spacing: 10) {
                 moreMenu
@@ -126,20 +118,40 @@ struct LiveModeView: View {
 
     @ViewBuilder
     private var middleContent: some View {
-        switch feature {
-        case .idle:  ChatOverlay(viewModel: $chatViewModel, perceptionState: orchestrator.stateStore, faceRecognitionService: faceRecognitionService)
-        case .record:
-            // Only show progress/result phases — capture is auto-triggered by the button
-            if recordFeature.phase != .ready {
-                RecordOverlayView(
-                    feature: recordFeature,
-                    isStable: true
-                ) { /* no-op: capture triggered by captureRecord() */ }
-                .padding(.bottom, 12)
+        VStack(spacing: 8) {
+            // Status hints moved from top
+            VStack(alignment: .leading, spacing: 6) {
+                // Room detection status
+                if let mgr = findManager, mgr.isDetectingRoom {
+                    CapsuleHint(text: mgr.statusMessage, showSpinner: true)
+                }
+                // Face recognition badges
+                ForEach(Array(orchestrator.stateStore.visibleFaces.values), id: \.id) { face in
+                    let displayText = face.relationship != nil ? "\(face.relationship!): \(face.name)" : face.name
+                    CapsuleHint(text: displayText)
+                }
+                // Tracking status — only in find mode
+                if feature == .find, let mgr = findManager {
+                    TrackingStatusBadge(manager: mgr)
+                }
             }
-        case .find:
-            FindDistanceOverlay(manager: findManager, selectedItem: selectedItem)
-                .padding(.bottom, 12)
+
+            // Feature-specific content
+            switch feature {
+            case .idle:  ChatOverlay(viewModel: $chatViewModel, perceptionState: orchestrator.stateStore, faceRecognitionService: faceRecognitionService)
+            case .record:
+                // Only show progress/result phases — capture is auto-triggered by the button
+                if recordFeature.phase != .ready {
+                    RecordOverlayView(
+                        feature: recordFeature,
+                        isStable: true
+                    ) { /* no-op: capture triggered by captureRecord() */ }
+                    .padding(.bottom, 12)
+                }
+            case .find:
+                FindDistanceOverlay(manager: findManager, selectedItem: selectedItem)
+                    .padding(.bottom, 12)
+            }
         }
     }
 
@@ -287,6 +299,7 @@ struct LiveModeView: View {
             }
             let roomID = orchestrator.stateStore.currentRoomID
             let roomName = orchestrator.stateStore.currentRoomName
+            logger.info("[Record] Capturing with roomID=\(roomID ?? "nil"), roomName=\(roomName ?? "nil")")
             recordFeature.capture(
                 arView: arView,
                 findManager: findManager,
