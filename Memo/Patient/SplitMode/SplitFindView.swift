@@ -55,7 +55,7 @@ struct SplitFindView: View {
                 Button {
                     stopFind()
                 } label: {
-                    Text("重新选择").font(.callout.bold()).foregroundStyle(.white)
+                    Text(String(localized: "重新选择")).font(.callout.bold()).foregroundStyle(.white)
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(.black.opacity(0.5), in: Capsule())
                 }
@@ -71,12 +71,12 @@ struct SplitFindView: View {
         let grouped = Dictionary(grouping: saved) { $0.roomID }
         return VStack(spacing: 12) {
             if saved.isEmpty {
-                Text("暂无已保存的物品")
+                Text(String(localized: "暂无已保存的物品"))
                     .font(.title3).foregroundStyle(.white.opacity(0.7))
                     .padding(24)
                     .background(.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 20))
             } else {
-                Text("选择要找的物品").font(.headline).foregroundStyle(.white.opacity(0.8))
+                Text(String(localized: "选择要找的物品")).font(.headline).foregroundStyle(.white.opacity(0.8))
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         // Group by room

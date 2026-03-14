@@ -28,7 +28,7 @@ struct SplitAskView: View {
                     .background(.white.opacity(0.15), in: Circle())
             }
             Spacer()
-            Text("问一问").font(.headline).foregroundStyle(.white.opacity(0.8))
+            Text(String(localized: "问一问")).font(.headline).foregroundStyle(.white.opacity(0.8))
             Spacer()
             // Invisible balance spacer
             Color.clear.frame(width: 40, height: 40)
