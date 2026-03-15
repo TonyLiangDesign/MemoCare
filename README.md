@@ -245,6 +245,38 @@ No data is sent to any external service until you explicitly provide API keys or
 - iPad and Vision Pro optimized layouts
 - Additional language support beyond the current Chinese and English
 
+## Lessons Learned & Future Vision
+
+### What We Learned
+
+Building MemoCare taught us that **truly simple interfaces for cognitive decline require more intelligence, not less**. The patient interface has almost no buttons or text — but behind that simplicity is a complex system of AI detection, spatial computing, and ambient sensing.
+
+**The paradox of simplicity**: To make the patient experience effortless, the system must work harder. Every tap-free interaction requires computer vision. Every voice command needs context-aware memory retrieval. Every automatic reminder depends on passive sensor fusion.
+
+**Privacy vs. capability tension**: The most helpful features — continuous camera monitoring, ambient voice detection, predictive behavior analysis — are also the most privacy-invasive. Patients with Alzheimer's need constant support, but they also deserve dignity and autonomy.
+
+### The Path Forward: Cameras as Eyes, Local AI as Brain
+
+The next generation of this system should operate as an **always-aware ambient assistant** — not a phone app you open, but an environment that watches, listens, and helps automatically.
+
+**Vision-first architecture**: Deploy multiple fixed cameras throughout the living space as the system's "eyes." Continuous visual monitoring enables:
+- Automatic item tracking (no manual recording needed)
+- Fall detection and safety alerts
+- Behavioral pattern recognition (wandering, confusion, distress)
+- Proactive assistance ("You're looking for your keys — they're on the kitchen counter")
+
+**Local-first AI deployment**: To protect patient privacy while maintaining intelligence, the entire AI stack should run on-premises using open-source models:
+- **Local LLMs** (e.g., Llama, Mistral) for chat and reasoning
+- **Local vision models** (e.g., YOLO, CLIP) for object and activity recognition
+- **Local speech models** (e.g., Whisper) for voice transcription
+- **Local vector databases** (e.g., Milvus, Qdrant) for memory storage
+
+This architecture ensures that **no patient data ever leaves the home network** — no cloud APIs, no third-party services, no privacy compromises. The trade-off is higher upfront hardware cost (a local GPU server), but the long-term benefits are substantial: zero recurring API costs, complete data sovereignty, and offline operation.
+
+**The ideal form factor**: AR glasses with outward-facing cameras become the patient's personal vision system, while fixed home cameras provide environmental awareness. The caregiver manages everything from a tablet or phone. The patient just lives their life — the system observes, remembers, and assists invisibly.
+
+This is the future we're building toward: **maximum support with maximum privacy, powered by local AI and ambient sensing.**
+
 ## Contributing
 
 Contributions are welcome. Please open an issue before submitting a pull request so we can discuss the approach first. Keep code style consistent with the existing codebase.
