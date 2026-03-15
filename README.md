@@ -236,15 +236,6 @@ No data is sent to any external service until you explicitly provide API keys or
 
 ---
 
-## Roadmap
-
-- Apple Watch companion for medication reminders and quick voice queries
-- On-device LLM fallback for offline chat (no API key needed)
-- Multi-patient support for professional caregivers
-- Smarter HomeKit automation (trigger reminders based on sensor patterns)
-- iPad and Vision Pro optimized layouts
-- Additional language support beyond the current Chinese and English
-
 ## Lessons Learned & Future Vision
 
 ### What We Learned
