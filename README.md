@@ -36,6 +36,8 @@ MemoCare uses text-to-speech extensively to communicate with the patient. The de
 
 ---
 
+[Project Demo Video](https://youtu.be/kGIt4n-ULwQ)
+
 ## Patient Mode
 
 The patient interface is designed to be **radically simple** — no menus, no text input, no complex navigation. Just a full-screen camera with a few large buttons. The patient only needs to tap or speak. Everything else happens automatically behind the scenes.
