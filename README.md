@@ -12,8 +12,6 @@ This concept video showcases how smart devices and EverMemOS assist individuals 
 
 [Watch Concept Video](https://youtu.be/kGIt4n-ULwQ)
 
-The app has two distinct interfaces: a simplified **Patient Mode** for daily use, and a secure **Caregiver Mode** for care management.
-
 ## Current iPhone Prototype
 
 <p align="center">
@@ -41,6 +39,8 @@ MemoCare uses text-to-speech extensively to communicate with the patient. The de
 4. Once installed, MemoCare will automatically use the higher-quality voice
 
 ---
+
+The app has two distinct interfaces: a simplified **Patient Mode** for daily use, and a secure **Caregiver Mode** for care management.
 
 ## Patient Mode
 
