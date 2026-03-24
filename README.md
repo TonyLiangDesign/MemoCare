@@ -6,9 +6,15 @@ MemoCare is an experimental project exploring how augmented reality, voice inter
 
 It currently runs on iPhone as a development prototype. However, a handheld phone is not the ideal form factor for patients with cognitive decline — the vision for this project is that these capabilities will truly shine on **future AR glasses**, where memory assistance becomes ambient, always-on, and hands-free.
 
+## Concept Video
+
+This concept video showcases how smart devices and EverMemOS assist individuals with Alzheimer's disease in their everyday lives.
+
+[Watch Concept Video](https://youtu.be/kGIt4n-ULwQ)
+
 The app has two distinct interfaces: a simplified **Patient Mode** for daily use, and a secure **Caregiver Mode** for care management.
 
-## MemoCare on TestFlight
+## Current iPhone Prototype
 
 <p align="center">
   <img src="assets/AppIcon256.png" width="128" alt="MemoCare Icon">
@@ -35,12 +41,6 @@ MemoCare uses text-to-speech extensively to communicate with the patient. The de
 4. Once installed, MemoCare will automatically use the higher-quality voice
 
 ---
-
-## Concept Video
-
-This concept video showcases how smart devices and EverMemOS assist individuals with Alzheimer’s disease in their everyday lives.
-
-[Watch Concept Video](https://youtu.be/kGIt4n-ULwQ)
 
 ## Patient Mode
 
